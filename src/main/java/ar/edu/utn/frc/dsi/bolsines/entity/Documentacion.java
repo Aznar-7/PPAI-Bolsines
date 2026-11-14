@@ -2,6 +2,7 @@ package ar.edu.utn.frc.dsi.bolsines.entity;
 
 import ar.edu.utn.frc.dsi.bolsines.entity.estado.EstadoDocumentacion;
 import ar.edu.utn.frc.dsi.bolsines.entity.estado.EstadoDocumentacionConverter;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.Registrada;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -52,63 +53,64 @@ public class Documentacion {
 
     /**
      * new(asunto, fechaPase, numero) del diagrama.
-     * TODO T4: dejarla en el estado inicial (Registrada) con su primer cambio de estado abierto.
      */
     public Documentacion(String asunto, LocalDateTime fechaPase, Integer numero, TipoDocumentacion tipo) {
         this.asunto = asunto;
         this.fechaPase = fechaPase;
         this.numero = numero;
         this.tieneUn = tipo;
+        this.estadoActual = new Registrada();
+        agregarCambioEstado(new CambioEstadoDocumentacion(fechaPase, estadoActual, null));
     }
 
-    // ---------- transiciones: delegan en el estado actual (TODO T4) ----------
+    // ---------- transiciones: delegan en el estado actual ----------
 
     public void remitar(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.remitar(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void cancelarRemito(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.cancelarRemito(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void generarBolsin(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.generarBolsin(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void modificarBolsin(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.modificarBolsin(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void eliminarBolsin(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.eliminarBolsin(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void retirarBolsin(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.retirarBolsin(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void aceptar(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.aceptar(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void rechazar(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.rechazar(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void registrarFaltaDocumentacion(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.registrarFaltaDocumentacion(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void redirigir(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.redirigir(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void reenviar(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.reenviar(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     public void darDeBaja(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T4");
+        estadoActual.darDeBaja(this, fechaHoraActual, empleado, cambiosEstado);
     }
 
     // ---------- usados por los estados concretos al terminar una transicion ----------

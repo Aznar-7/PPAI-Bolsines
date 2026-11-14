@@ -40,11 +40,11 @@ public class CambioEstadoDocumentacion {
     }
 
     public boolean esActual() {
-        throw new UnsupportedOperationException("TODO T4");
+        return fechaHoraFin == null;
     }
 
     public void setFechaHoraFin(LocalDateTime fechaHoraActual) {
-        throw new UnsupportedOperationException("TODO T4");
+        this.fechaHoraFin = fechaHoraActual;
     }
 
     public LocalDateTime getFechaHoraInicio() {
