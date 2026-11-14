@@ -79,16 +79,21 @@ public abstract class EstadoDocumentacion {
         throw new TransicionInvalidaException("darDeBaja", this);
     }
 
-    // ---------- ayudas comunes a todas las transiciones (TODO T3) ----------
+    // ---------- ayudas comunes a todas las transiciones ----------
 
     /** Devuelve el cambio de estado vigente (el que no tiene fecha de fin). */
     protected CambioEstadoDocumentacion buscarCEActual(List<CambioEstadoDocumentacion> cambiosEstado) {
-        throw new UnsupportedOperationException("TODO T3");
+        for (CambioEstadoDocumentacion cambioEstado : cambiosEstado) {
+            if (cambioEstado.esActual()) {
+                return cambioEstado;
+            }
+        }
+        throw new IllegalStateException("La documentacion no tiene un cambio de estado actual");
     }
 
     protected CambioEstadoDocumentacion crearCambioEstado(LocalDateTime fechaHoraActual,
                                                           EstadoDocumentacion estado, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T3");
+        return new CambioEstadoDocumentacion(fechaHoraActual, estado, empleado);
     }
 
     // ---------- nombre y reconstruccion desde la base ----------
