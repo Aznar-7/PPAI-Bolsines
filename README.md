@@ -2,7 +2,7 @@
 
 DSI 2026 · Grupo 4 · Entrega 2 (Diseño). Implementación del CU 28 con el **patrón State** sobre `Documentacion`.
 
-Tablero: https://aznarvicente8.atlassian.net/browse/BOLS-1
+Tablero: https://juanagustingarcia74.atlassian.net/browse/PB-1
 
 ## Cómo correr
 
@@ -82,4 +82,4 @@ feature/t5-gestor          feature/t6-alternativos
 feature/t7-pantalla-bandeja feature/t8-pantalla-control
 ```
 
-Commits con el prefijo de la tarjeta: `BOLS-5 feat(state): transiciones de EnBolsinEnviado`.
+Commits con el prefijo de la tarjeta: `PB-5 feat(state): transiciones de EnBolsinEnviado`.
