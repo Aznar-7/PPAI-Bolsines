@@ -7,7 +7,7 @@ import ar.edu.utn.frc.dsi.bolsines.control.dto.InicioRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.RemitoVista;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.ResultadoRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.ResumenRecepcion;
-import ar.edu.utn.frc.dsi.bolsines.control.dto.SituacionRecepcion;
+import ar.edu.utn.frc.dsi.bolsines.entity.SituacionRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.servicio.AvisoNotificacion;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
