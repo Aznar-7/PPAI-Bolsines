@@ -61,14 +61,16 @@ public class Bolsin {
         return this;
     }
 
-    /** Verdadero si el bolsin tiene como destino la CM recibida. */
+    /** Verdadero si el bolsin tiene como destino la CM recibida. Se compara por id. */
     public boolean esDeCM(ComisionMedica cm) {
-        throw new UnsupportedOperationException("TODO T5");
+        return destino != null && cm != null && destino.getId() != null
+                && destino.getId().equals(cm.getId());
     }
 
     /** Verdadero si el cambio de estado actual del bolsin es Enviado. */
     public boolean esEnviado() {
-        throw new UnsupportedOperationException("TODO T5");
+        CambioEstadoBolsin actual = buscarCambioEstadoActual();
+        return actual != null && actual.esEnviado();
     }
 
     public String getNroPrecinto() {
@@ -89,11 +91,28 @@ public class Bolsin {
      */
     public void recibirBolsin(LocalDateTime fechaHoraActual, Empleado empleado,
                               Estado estadoBolsin, Estado estadoRemito) {
-        throw new UnsupportedOperationException("TODO T5");
+        CambioEstadoBolsin actual = buscarCambioEstadoActual();
+        if (actual != null) {
+            actual.setFechaHoraFin(fechaHoraActual);
+        }
+        crearCambioEstadoBolsin(fechaHoraActual, estadoBolsin, empleado);
+        for (Remito remito : remitos) {
+            remito.recibir(fechaHoraActual, empleado, estadoRemito);
+        }
     }
 
     public void crearCambioEstadoBolsin(LocalDateTime fechaHoraActual, Estado estado, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T5");
+        agregarCambioEstado(new CambioEstadoBolsin(fechaHoraActual, estado, empleado));
+    }
+
+    /** El cambio de estado vigente es el que todavia no tiene fecha de fin. */
+    private CambioEstadoBolsin buscarCambioEstadoActual() {
+        for (CambioEstadoBolsin cambioEstado : cambiosEstado) {
+            if (cambioEstado.esActual()) {
+                return cambioEstado;
+            }
+        }
+        return null;
     }
 
     // ---------- soporte ----------
