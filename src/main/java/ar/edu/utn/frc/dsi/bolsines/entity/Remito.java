@@ -60,11 +60,14 @@ public class Remito {
     }
 
     /**
-     * Cambia el estado del remito y, por cada detalle, le pide a la documentacion que se reciba
-     * segun la situacion marcada.
+     * Flujo principal: el remito pasa al estado que le indica el gestor (Recibido y aceptado)
+     * y le pide a cada detalle que acepte su documentacion.
      */
     public void recibir(LocalDateTime fechaHoraActual, Empleado empleado, Estado estadoRemito) {
-        throw new UnsupportedOperationException("TODO T5");
+        setEstado(estadoRemito);
+        for (DetalleRemito detalle : detalleRemito) {
+            detalle.aceptarDocumentacion(fechaHoraActual, empleado);
+        }
     }
 
     // ---------- soporte ----------

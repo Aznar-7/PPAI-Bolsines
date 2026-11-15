@@ -37,7 +37,7 @@ public class DetalleRemito {
 
     /** Flujo principal: delega en documentacion.aceptar(...). Lo de adentro es el patron State. */
     public void aceptarDocumentacion(LocalDateTime fechaHoraActual, Empleado empleado) {
-        throw new UnsupportedOperationException("TODO T5");
+        documentacion.aceptar(fechaHoraActual, empleado);
     }
 
     public Integer getNumero() {
