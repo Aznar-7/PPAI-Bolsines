@@ -22,9 +22,14 @@ import ar.edu.utn.frc.dsi.bolsines.entity.Documentacion;
 import ar.edu.utn.frc.dsi.bolsines.entity.Empleado;
 import ar.edu.utn.frc.dsi.bolsines.entity.Estado;
 import ar.edu.utn.frc.dsi.bolsines.entity.Remito;
+import ar.edu.utn.frc.dsi.bolsines.entity.SituacionRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.entity.TipoDocumentacion;
 import ar.edu.utn.frc.dsi.bolsines.entity.Usuario;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.EstadoDocumentacion;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.NoRecibida;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.ParaRedirigir;
 import ar.edu.utn.frc.dsi.bolsines.entity.estado.RecibidaYAceptada;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.RecibidaYRechazada;
 import ar.edu.utn.frc.dsi.bolsines.repository.BolsinRepository;
 import ar.edu.utn.frc.dsi.bolsines.repository.ComisionMedicaRepository;
 import ar.edu.utn.frc.dsi.bolsines.repository.EmpleadoRepository;
@@ -65,6 +70,7 @@ class GestorRecepcionDeBolsinesTest {
     @Autowired private EntityManager entityManager;
 
     private Empleado encargado;
+    private Empleado encargadoCordoba;
     private Bolsin bolsinARecibir;
     private Bolsin bolsinHaciaCordoba;
     private Bolsin bolsinTodaviaCreado;
@@ -108,7 +114,11 @@ class GestorRecepcionDeBolsinesTest {
 
         bolsinHaciaCordoba = new Bolsin(1288, "004513", 500, AYER, mendoza, cordoba);
         bolsinHaciaCordoba.agregarCambioEstado(new CambioEstadoBolsin(AYER, bolsinEnviado, encargadoMendoza));
+        Remito remito300 = new Remito(300, AYER, mendoza, cordoba, remitoEnBolsinEnviado);
+        remito300.agregarDetalle(detalle(1, "Carta documento", expediente, encargadoMendoza));
+        bolsinHaciaCordoba.agregarRemito(remito300);
         bolsinRepository.save(bolsinHaciaCordoba);
+        encargadoCordoba = empleadoRepository.save(new Empleado("Laura", "Paz", "lpaz@ejemplo.com", null, cordoba));
 
         bolsinTodaviaCreado = new Bolsin(1289, "004514", 300, AYER, mendoza, central);
         bolsinTodaviaCreado.agregarCambioEstado(new CambioEstadoBolsin(AYER, bolsinCreado, encargadoMendoza));
@@ -263,5 +273,128 @@ class GestorRecepcionDeBolsinesTest {
         assertTrue(sinTocar.esEnviado());
         assertNotNull(sinTocar.getRemitos());
         assertTrue(notificados.isEmpty(), "no tendria que haber notificado");
+    }
+
+    // =====================================================================
+    // T6: flujos alternativos A3, A4 y A5
+    // =====================================================================
+
+    /** Ids de la documentacion del bolsin a recibir, en orden: [0] y [1] del remito 213, [2] del 214. */
+    private List<Long> idsDocumentacion() {
+        gestor.opcionRegistrarRecepcionDeBolsin();
+        DetalleBolsin detalle = gestor.tomarSeleccionBolsin(bolsinARecibir.getId());
+        List<Long> ids = new ArrayList<>();
+        detalle.remitos().forEach(r -> r.documentacion().forEach(d -> ids.add(d.id())));
+        return ids;
+    }
+
+    /** Marca, confirma y devuelve el bolsin vuelto a leer de la base. */
+    private Bolsin confirmarCon(Map<Long, SituacionRecepcion> marcas) {
+        gestor.tomarSeleccionRecepcionBolsin(marcas);
+        gestor.tomarConfirmacionRegistro();
+        entityManager.flush();
+        entityManager.clear();
+        return bolsinRepository.findById(bolsinARecibir.getId()).orElseThrow();
+    }
+
+    private Remito remito(Bolsin bolsin, int numero) {
+        return bolsin.getRemitos().stream().filter(r -> r.getNumero() == numero).findFirst().orElseThrow();
+    }
+
+    private EstadoDocumentacion estadoDe(Remito remito, int indice) {
+        return remito.getDetalleRemito().get(indice).getDocumentacion().getEstado();
+    }
+
+    @Test
+    void a3FaltaUnDocumentoQuedaNoRecibidaYSuRemitoParcial() {
+        List<Long> ids = idsDocumentacion();
+
+        Bolsin guardado = confirmarCon(Map.of(ids.get(0), SituacionRecepcion.FALTANTE));
+
+        assertFalse(guardado.esEnviado());
+        assertInstanceOf(NoRecibida.class, estadoDe(remito(guardado, 213), 0));
+        assertInstanceOf(RecibidaYAceptada.class, estadoDe(remito(guardado, 213), 1));
+        assertTrue(remito(guardado, 213).getEstado().esRecibidoYAceptadoParcial());
+        assertTrue(remito(guardado, 214).getEstado().esRecibidoYAceptado(), "el otro remito llego completo");
+        assertEquals(SituacionRecepcion.FALTANTE, notificados.get(0).documentacion().get(0).situacion(),
+                "el aviso a la CM de origen dice que documento falto");
+    }
+
+    @Test
+    void a4DocumentoQueNoCorrespondeQuedaRecibidaYRechazada() {
+        List<Long> ids = idsDocumentacion();
+
+        Bolsin guardado = confirmarCon(Map.of(ids.get(2), SituacionRecepcion.NO_CORRESPONDE));
+
+        assertInstanceOf(RecibidaYRechazada.class, estadoDe(remito(guardado, 214), 0));
+        assertTrue(remito(guardado, 214).getEstado().esRecibidoYAceptadoParcial());
+        assertTrue(remito(guardado, 213).getEstado().esRecibidoYAceptado());
+    }
+
+    @Test
+    void a5DesdeLaCMCSePuedeRedirigirYQuedaParaRedirigir() {
+        List<Long> ids = idsDocumentacion();
+
+        Bolsin guardado = confirmarCon(Map.of(ids.get(1), SituacionRecepcion.REDIRIGIR));
+
+        assertInstanceOf(ParaRedirigir.class, estadoDe(remito(guardado, 213), 1));
+        assertTrue(remito(guardado, 213).getEstado().esRecibidoYAceptadoParcial());
+    }
+
+    @Test
+    void a5DesdeOtraCMNoSePuedeRedirigirPeroSiMarcarFaltante() {
+        ServicioSesion sesionCordoba = mock(ServicioSesion.class);
+        when(sesionCordoba.getEmpleadoLogueado()).thenReturn(encargadoCordoba);
+        GestorRecepcionDeBolsines gestorCordoba = new GestorRecepcionDeBolsines(bolsinRepository,
+                estadoRepository, sesionCordoba, resumen -> List.of(), false);
+
+        InicioRecepcion inicio = gestorCordoba.opcionRegistrarRecepcionDeBolsin();
+        assertFalse(inicio.cmEsCentral());
+        DetalleBolsin detalle = gestorCordoba.tomarSeleccionBolsin(bolsinHaciaCordoba.getId());
+        Long idDoc = detalle.remitos().get(0).documentacion().get(0).id();
+
+        RecepcionException error = assertThrows(RecepcionException.class,
+                () -> gestorCordoba.tomarSeleccionRecepcionBolsin(Map.of(idDoc, SituacionRecepcion.REDIRIGIR)));
+        assertTrue(error.getMessage().contains("Comision Medica Central"));
+
+        ResumenRecepcion resumen = gestorCordoba.tomarSeleccionRecepcionBolsin(Map.of(idDoc, SituacionRecepcion.FALTANTE));
+        assertEquals(SituacionRecepcion.FALTANTE, resumen.documentacion().get(0).situacion());
+    }
+
+    @Test
+    void noSePuedeMarcarDocumentacionDeOtroBolsin() {
+        idsDocumentacion();
+
+        assertThrows(RecepcionException.class,
+                () -> gestor.tomarSeleccionRecepcionBolsin(Map.of(999_999L, SituacionRecepcion.FALTANTE)));
+    }
+
+    @Test
+    void elResumenAnticipaElRemitoParcialAntesDeConfirmar() {
+        List<Long> ids = idsDocumentacion();
+
+        ResumenRecepcion resumen = gestor.tomarSeleccionRecepcionBolsin(Map.of(ids.get(0), SituacionRecepcion.FALTANTE));
+
+        assertEquals(Estado.RECIBIDO_Y_ACEPTADO_PARCIAL, resumen.remitos().get(0).estadoFinal());
+        assertEquals(Estado.RECIBIDO_Y_ACEPTADO, resumen.remitos().get(1).estadoFinal());
+        assertEquals(1, resumen.cantidad(SituacionRecepcion.FALTANTE));
+        assertEquals(2, resumen.cantidad(SituacionRecepcion.RECIBIDA));
+    }
+
+    @Test
+    void unMismoBolsinConLasTresNovedadesALaVez() {
+        List<Long> ids = idsDocumentacion();
+
+        Bolsin guardado = confirmarCon(Map.of(
+                ids.get(0), SituacionRecepcion.FALTANTE,
+                ids.get(1), SituacionRecepcion.NO_CORRESPONDE,
+                ids.get(2), SituacionRecepcion.REDIRIGIR));
+
+        assertInstanceOf(NoRecibida.class, estadoDe(remito(guardado, 213), 0));
+        assertInstanceOf(RecibidaYRechazada.class, estadoDe(remito(guardado, 213), 1));
+        assertInstanceOf(ParaRedirigir.class, estadoDe(remito(guardado, 214), 0));
+        assertTrue(remito(guardado, 213).getEstado().esRecibidoYAceptadoParcial());
+        assertTrue(remito(guardado, 214).getEstado().esRecibidoYAceptadoParcial());
+        assertFalse(guardado.esEnviado(), "el bolsin queda recibido llegue como llegue");
     }
 }

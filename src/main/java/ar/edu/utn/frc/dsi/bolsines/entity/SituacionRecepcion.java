@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.dsi.bolsines.control.dto;
+package ar.edu.utn.frc.dsi.bolsines.entity;
 
 /**
  * Como llego cada documentacion. La elige el Encargado de Bolsines en la pantalla de control.

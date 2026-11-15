@@ -1,5 +1,7 @@
 package ar.edu.utn.frc.dsi.bolsines.control.dto;
 
+import ar.edu.utn.frc.dsi.bolsines.entity.SituacionRecepcion;
+
 import java.util.List;
 
 /**

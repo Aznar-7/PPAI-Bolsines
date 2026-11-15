@@ -40,6 +40,21 @@ public class DetalleRemito {
         documentacion.aceptar(fechaHoraActual, empleado);
     }
 
+    /**
+     * Le pide a la documentacion la operacion que corresponde a como llego.
+     *
+     * El switch es sobre lo que eligio el usuario, NO sobre el estado de la documentacion: aca se
+     * decide QUE pedir; si se puede y a que estado pasa lo decide el estado actual (patron State).
+     */
+    public void recibirDocumentacion(LocalDateTime fechaHoraActual, Empleado empleado, SituacionRecepcion situacion) {
+        switch (situacion) {
+            case RECIBIDA -> aceptarDocumentacion(fechaHoraActual, empleado);
+            case FALTANTE -> documentacion.registrarFaltaDocumentacion(fechaHoraActual, empleado);
+            case NO_CORRESPONDE -> documentacion.rechazar(fechaHoraActual, empleado);
+            case REDIRIGIR -> documentacion.redirigir(fechaHoraActual, empleado);
+        }
+    }
+
     public Integer getNumero() {
         return numero;
     }

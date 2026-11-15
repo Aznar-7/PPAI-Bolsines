@@ -12,6 +12,7 @@ import jakarta.persistence.OrderBy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Duenio: T5 (Agustin). */
 @Entity
@@ -91,13 +92,23 @@ public class Bolsin {
      */
     public void recibirBolsin(LocalDateTime fechaHoraActual, Empleado empleado,
                               Estado estadoBolsin, Estado estadoRemito) {
+        recibirBolsin(fechaHoraActual, empleado, estadoBolsin, estadoRemito, estadoRemito, Map.of());
+    }
+
+    /**
+     * Recepcion con novedades (A3, A4, A5). El bolsin queda Recibido en CM destino llegue como
+     * llegue; cada remito decide si queda aceptado o aceptado parcial segun su documentacion.
+     */
+    public void recibirBolsin(LocalDateTime fechaHoraActual, Empleado empleado, Estado estadoBolsin,
+                              Estado estadoRemito, Estado estadoRemitoParcial,
+                              Map<Long, SituacionRecepcion> situaciones) {
         CambioEstadoBolsin actual = buscarCambioEstadoActual();
         if (actual != null) {
             actual.setFechaHoraFin(fechaHoraActual);
         }
         crearCambioEstadoBolsin(fechaHoraActual, estadoBolsin, empleado);
         for (Remito remito : remitos) {
-            remito.recibir(fechaHoraActual, empleado, estadoRemito);
+            remito.recibir(fechaHoraActual, empleado, estadoRemito, estadoRemitoParcial, situaciones);
         }
     }
 

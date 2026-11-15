@@ -7,7 +7,7 @@ import ar.edu.utn.frc.dsi.bolsines.control.dto.InicioRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.RemitoVista;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.ResultadoRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.ResumenRecepcion;
-import ar.edu.utn.frc.dsi.bolsines.control.dto.SituacionRecepcion;
+import ar.edu.utn.frc.dsi.bolsines.entity.SituacionRecepcion;
 import ar.edu.utn.frc.dsi.bolsines.entity.Bolsin;
 import ar.edu.utn.frc.dsi.bolsines.entity.CambioEstadoBolsin;
 import ar.edu.utn.frc.dsi.bolsines.entity.ComisionMedica;
@@ -16,6 +16,7 @@ import ar.edu.utn.frc.dsi.bolsines.entity.Documentacion;
 import ar.edu.utn.frc.dsi.bolsines.entity.Empleado;
 import ar.edu.utn.frc.dsi.bolsines.entity.Estado;
 import ar.edu.utn.frc.dsi.bolsines.entity.Remito;
+import ar.edu.utn.frc.dsi.bolsines.entity.estado.TransicionInvalidaException;
 import ar.edu.utn.frc.dsi.bolsines.repository.BolsinRepository;
 import ar.edu.utn.frc.dsi.bolsines.repository.EstadoRepository;
 import ar.edu.utn.frc.dsi.bolsines.servicio.AvisoNotificacion;
@@ -59,6 +60,7 @@ public class GestorRecepcionDeBolsines {
     private Long idBolsinSeleccionado;
     private Estado estadoRecibidoEnCMDestino;
     private Estado estadoRecibidoYAceptado;
+    private Estado estadoRecibidoYAceptadoParcial;
     private Map<Long, SituacionRecepcion> opSeleccionada;
     private ResumenRecepcion resumenSeleccionado;
 
@@ -137,6 +139,7 @@ public class GestorRecepcionDeBolsines {
             return mentira.resumen(marcas);
         }
         Bolsin bolsin = getBolsinSeleccionado();
+        validarMarcas(bolsin, marcas);
         opSeleccionada = new HashMap<>(marcas);
         resumenSeleccionado = armarResumen(bolsin);
         return resumenSeleccionado;
@@ -151,15 +154,16 @@ public class GestorRecepcionDeBolsines {
         if (resumenSeleccionado == null) {
             throw new RecepcionException("Primero hay que indicar como llego la documentacion.");
         }
-        if (resumenSeleccionado.documentacion().stream()
-                .anyMatch(d -> d.situacion() != SituacionRecepcion.RECIBIDA)) {
-            throw new UnsupportedOperationException("TODO T6: flujos alternativos A3, A4 y A5");
-        }
         Bolsin bolsin = getBolsinSeleccionado();
 
         fechaHoraActual = obtenerFechaHoraActual();
         buscarEstados();
-        actualizarEstados(bolsin);
+        try {
+            actualizarEstados(bolsin);
+        } catch (TransicionInvalidaException e) {
+            // La maquina de estados rechazo una operacion: no se guarda nada (la transaccion se deshace).
+            throw new RecepcionException("No se pudo registrar la recepcion: " + e.getMessage());
+        }
         bolsinRepository.save(bolsin);
 
         List<AvisoNotificacion> avisos = ejecutarCU29();
@@ -212,12 +216,14 @@ public class GestorRecepcionDeBolsines {
     }
 
     /**
-     * Recorre los Estado y se queda con el de ambito Bolsin "Recibido en CM destino" y el de
-     * ambito Remito "Recibido y aceptado". Son los dos loops del diagrama de secuencia.
+     * Recorre los Estado y se queda con el de ambito Bolsin "Recibido en CM destino" y los de
+     * ambito Remito "Recibido y aceptado" y "Recibido y aceptado parcial" (los loops del diagrama
+     * de secuencia).
      */
     private void buscarEstados() {
         estadoRecibidoEnCMDestino = null;
         estadoRecibidoYAceptado = null;
+        estadoRecibidoYAceptadoParcial = null;
         for (Estado estado : estadoRepository.findAll()) {
             if (estado.esAmbito(Estado.AMBITO_BOLSIN) && estado.esRecibidoEnCMDestino()) {
                 estadoRecibidoEnCMDestino = estado;
@@ -225,16 +231,47 @@ public class GestorRecepcionDeBolsines {
             if (estado.esAmbito(Estado.AMBITO_REMITO) && estado.esRecibidoYAceptado()) {
                 estadoRecibidoYAceptado = estado;
             }
+            if (estado.esAmbito(Estado.AMBITO_REMITO) && estado.esRecibidoYAceptadoParcial()) {
+                estadoRecibidoYAceptadoParcial = estado;
+            }
         }
-        if (estadoRecibidoEnCMDestino == null || estadoRecibidoYAceptado == null) {
-            throw new IllegalStateException("Faltan cargar los estados 'Recibido en CM destino' (Bolsin) "
-                    + "o 'Recibido y aceptado' (Remito).");
+        if (estadoRecibidoEnCMDestino == null || estadoRecibidoYAceptado == null
+                || estadoRecibidoYAceptadoParcial == null) {
+            throw new IllegalStateException("Faltan cargar los estados 'Recibido en CM destino' (Bolsin), "
+                    + "'Recibido y aceptado' o 'Recibido y aceptado parcial' (Remito).");
         }
     }
 
-    /** El gestor no cambia estados: se lo pide al bolsin, que a su vez se lo pide a cada remito. */
+    /**
+     * El gestor no cambia estados: se lo pide al bolsin, que se lo pide a cada remito, que le pide
+     * a cada documentacion la operacion segun como llego (aceptar, registrarFaltaDocumentacion,
+     * rechazar o redirigir). A que estado pasa cada documentacion lo decide su estado actual.
+     */
     private void actualizarEstados(Bolsin bolsin) {
-        bolsin.recibirBolsin(fechaHoraActual, empleadoLogueado, estadoRecibidoEnCMDestino, estadoRecibidoYAceptado);
+        bolsin.recibirBolsin(fechaHoraActual, empleadoLogueado, estadoRecibidoEnCMDestino,
+                estadoRecibidoYAceptado, estadoRecibidoYAceptadoParcial, opSeleccionada);
+    }
+
+    /**
+     * Cada marca tiene que ser de una documentacion de este bolsin, y solo la Comision Medica
+     * Central puede redirigir a un area interna (A5).
+     */
+    private void validarMarcas(Bolsin bolsin, Map<Long, SituacionRecepcion> marcas) {
+        Set<Long> idsDelBolsin = new LinkedHashSet<>();
+        for (Remito remito : bolsin.getRemitos()) {
+            for (DetalleRemito detalle : remito.getDetalleRemito()) {
+                idsDelBolsin.add(detalle.getDocumentacion().getId());
+            }
+        }
+        for (Map.Entry<Long, SituacionRecepcion> marca : marcas.entrySet()) {
+            if (!idsDelBolsin.contains(marca.getKey())) {
+                throw new RecepcionException("Se marco una documentacion que no esta en este bolsin.");
+            }
+            if (marca.getValue() == SituacionRecepcion.REDIRIGIR && !cmUsuario.esCentral()) {
+                throw new RecepcionException("Solo la Comision Medica Central puede redirigir documentacion "
+                        + "a un area interna.");
+            }
+        }
     }
 
     /** <<include>> CU 29 Notificar recepcion de bolsin. */
