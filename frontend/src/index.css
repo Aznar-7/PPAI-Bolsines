@@ -11,6 +11,7 @@
   --font-sans: 'Encode Sans Variable', system-ui, sans-serif;
 
   --color-papel: #f3f5f8;
+  --color-panel: #e9edf4;
   --color-hoja: #ffffff;
   --color-linea: #dce1e9;
   --color-linea-fuerte: #b9c1ce;
@@ -79,6 +80,29 @@
     background: var(--color-precinto);
     color: var(--color-grafito);
   }
+
+  input,
+  textarea {
+    caret-color: var(--color-sello);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-linea-fuerte) transparent;
+  }
+
+  /* Las transiciones entre pantallas: rapidas, sin coreografia. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+  }
+}
+
+@utility tabla-encabezado {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-tenue);
+  letter-spacing: 0.01em;
 }
 
 @utility ancho-precinto {

@@ -11,6 +11,25 @@ function inicioDelDia(fecha: Date) {
   return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime()
 }
 
+const fechaLarga = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+const fechaCorta = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+
+/** "lunes 16 de noviembre" */
+export function hoyLargo(ahora = new Date()): string {
+  return fechaLarga.format(ahora)
+}
+
+/** "13 nov, 09:40" */
+export function fechaYHora(fechaIso: string | null): string {
+  return fechaIso ? fechaCorta.format(new Date(fechaIso)) : 'Sin fecha'
+}
+
+/** ponytail: el peso del bolsin viene sin unidad en el modelo; se asume gramos. */
+export function peso(gramos: number | null): string {
+  if (gramos == null) return 'Sin registrar'
+  return gramos >= 1000 ? `${(gramos / 1000).toLocaleString('es-AR', { maximumFractionDigits: 2 })} kg` : `${gramos} g`
+}
+
 export function saludo(ahora = new Date()): string {
   const hora = ahora.getHours()
   if (hora < 13) return 'Buen día'
