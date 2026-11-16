@@ -30,6 +30,7 @@ function Detalle({ resultado }: { resultado: ResultadoRecepcion }) {
 
   return (
     <div className="space-y-6">
+      <title>{`Bolsín ${bolsin.numeroBolsin} recibido · Bolsines`}</title>
       <section className="relative overflow-hidden rounded-[20px] border border-linea bg-hoja p-6 shadow-hoja sm:p-10">
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div>
