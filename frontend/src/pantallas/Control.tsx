@@ -1,7 +1,10 @@
+import { FileText } from 'lucide-react'
 import { Link, useLoaderData } from 'react-router'
 import type { DetalleBolsin } from '../api'
+import { FichaBolsin } from '../componentes/FichaBolsin'
 import { Pasos } from '../componentes/Pasos'
-import { EtiquetaPrecinto } from '../componentes/Precinto'
+import { boton } from '../componentes/estilos'
+import { EncabezadoPagina } from '../componentes/ui'
 import { plural } from '../formato'
 
 /**
@@ -13,41 +16,65 @@ export function Control() {
   const { bolsin, cmDestino, remitos } = useLoaderData() as DetalleBolsin
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <Link to="/recepcion" viewTransition className="text-sm font-medium text-sello hover:underline">
-          Volver a los bolsines
-        </Link>
-        <Pasos actual={2} />
-      </div>
+    <div className="space-y-6">
+      <EncabezadoPagina
+        migas={[
+          { texto: 'Inicio', a: '/inicio' },
+          { texto: 'Recibir bolsines', a: '/recepcion' },
+          { texto: `Bolsín N.º ${bolsin.numeroBolsin}` },
+        ]}
+        titulo="Controlá lo que vino en el bolsín"
+        descripcion={`Abrí el bolsín y compará con esta lista: ${plural(bolsin.cantidadRemitos, 'remito', 'remitos')} con ${plural(bolsin.cantidadDocumentos, 'documento', 'documentos')} en total.`}
+        extra={<Pasos actual={2} />}
+      />
 
-      <header className="flex flex-wrap items-center gap-x-6 gap-y-4">
-        <EtiquetaPrecinto numero={bolsin.numeroPrecinto} id={bolsin.id} grande />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Bolsín N.º {bolsin.numeroBolsin}</h1>
-          <p className="text-tenue">
-            Desde {bolsin.cmOrigen} hacia {cmDestino}. {plural(bolsin.cantidadRemitos, 'remito', 'remitos')},{' '}
-            {plural(bolsin.cantidadDocumentos, 'documento', 'documentos')}.
-          </p>
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
+        <div className="min-w-0 space-y-5">
+          {remitos.map((remito) => (
+            <section key={remito.numero} aria-labelledby={`remito-${remito.numero}`} className="overflow-hidden rounded-panel border border-linea bg-hoja">
+              <div className="flex items-center justify-between gap-4 border-b border-linea bg-papel/70 px-5 py-3">
+                <h2 id={`remito-${remito.numero}`} className="font-bold cifras">
+                  Remito N.º {remito.numero}
+                </h2>
+                <span className="text-sm text-tenue">{plural(remito.documentacion.length, 'documento', 'documentos')}</span>
+              </div>
+              <table className="w-full text-left text-[0.9375rem]">
+                <thead className="sr-only sm:not-sr-only">
+                  <tr className="border-b border-linea">
+                    <th scope="col" className="px-5 py-2 tabla-encabezado">Asunto</th>
+                    <th scope="col" className="px-5 py-2 tabla-encabezado">Tipo</th>
+                    <th scope="col" className="hidden px-5 py-2 text-right tabla-encabezado sm:table-cell">N.º</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {remito.documentacion.map((doc) => (
+                    <tr key={doc.id} className="border-b border-linea last:border-b-0">
+                      <td className="py-3.5 pr-3 pl-5">
+                        <span className="flex items-center gap-3 font-medium">
+                          <FileText aria-hidden className="size-4 shrink-0 text-tenue" />
+                          {doc.asunto}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="rounded-full border border-linea bg-papel px-2.5 py-0.5 text-sm whitespace-nowrap text-tenue">{doc.tipo}</span>
+                      </td>
+                      <td className="hidden px-5 py-3.5 text-right text-sm text-tenue cifras sm:table-cell">{doc.numero}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          ))}
         </div>
-      </header>
 
-      <div className="space-y-6">
-        {remitos.map((remito) => (
-          <section key={remito.numero} aria-labelledby={`remito-${remito.numero}`} className="rounded-panel bg-hoja shadow-hoja">
-            <h2 id={`remito-${remito.numero}`} className="border-b border-linea px-6 py-4 font-semibold cifras">
-              Remito N.º {remito.numero}
-            </h2>
-            <ul>
-              {remito.documentacion.map((doc) => (
-                <li key={doc.id} className="flex items-center justify-between gap-4 border-b border-linea px-6 py-4 last:border-b-0">
-                  <span className="font-medium">{doc.asunto}</span>
-                  <span className="shrink-0 rounded-full bg-papel px-3 py-1 text-sm text-tenue">{doc.tipo}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        <aside aria-label="Bolsín que estás controlando" className="space-y-4 xl:sticky xl:top-8">
+          <div className="rounded-panel border border-linea bg-hoja p-5">
+            <FichaBolsin bolsin={bolsin} cmDestino={cmDestino} conTransicion />
+          </div>
+          <Link to="/recepcion" viewTransition className={`${boton.secundario} w-full`}>
+            Elegir otro bolsín
+          </Link>
+        </aside>
       </div>
     </div>
   )
