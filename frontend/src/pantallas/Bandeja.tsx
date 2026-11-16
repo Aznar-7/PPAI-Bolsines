@@ -13,6 +13,9 @@ import { diasEsperando, fechaYHora, haceCuanto, plural } from '../formato'
 
 type Orden = 'antiguos' | 'recientes'
 
+/** La ficha al costado solo existe en pantallas anchas; en las chicas, tocar un bolsin lo abre directo. */
+const conVistaPrevia = () => window.matchMedia?.('(min-width: 80rem)').matches ?? true
+
 /**
  * Recibir bolsines (pasos 3 a 5, A1 y A2). Maestro-detalle: a la izquierda la lista filtrable de los
  * bolsines enviados hacia la CM del usuario; a la derecha el bolsin elegido, para confirmar que es el
@@ -92,6 +95,7 @@ export function Bandeja() {
 
   return (
     <div className="space-y-6">
+      <title>Recibir bolsines · Bolsines</title>
       <EncabezadoPagina
         migas={[{ texto: 'Inicio', a: '/inicio' }, { texto: 'Recibir bolsines' }]}
         titulo="Elegí el bolsín que vas a recibir"
@@ -204,7 +208,7 @@ export function Bandeja() {
                     bolsin={b}
                     buscado={precinto}
                     elegido={b.id === elegido?.id}
-                    onElegir={() => setIdElegido(b.id)}
+                    onElegir={() => (conVistaPrevia() ? setIdElegido(b.id) : controlar(b))}
                     onAbrir={() => controlar(b)}
                   />
                 ))}
@@ -220,7 +224,7 @@ export function Bandeja() {
           )}
         </div>
 
-        <div className="space-y-4 xl:sticky xl:top-8">
+        <div className="hidden space-y-4 xl:sticky xl:top-8 xl:block">
           <Vista bolsin={sinResultados ? null : elegido} cmDestino={cmUsuario} onControlar={() => controlar(elegido)} />
           <Atajos />
         </div>
