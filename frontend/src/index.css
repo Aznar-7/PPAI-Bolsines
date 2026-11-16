@@ -1,0 +1,226 @@
+@import '@fontsource-variable/encode-sans/wdth.css';
+@import 'tailwindcss';
+
+@custom-variant oscuro (&:where([data-tema='oscuro'], [data-tema='oscuro'] *));
+
+/*
+  Bolsines · sistema visual
+  El mundo de la recepcion: precintos amarillos numerados, remitos, rotulos de envio y el sello de
+  goma azul. Una sola familia (Encode Sans, la de argentina.gob.ar) y su eje de ancho como
+  herramienta: ancha para numeros de precinto, normal para leer, angosta para datos densos.
+
+  Dos temas con los mismos nombres: "claro" (la mesa de entradas de dia) y "oscuro" (tinta azul
+  de noche). El amarillo del precinto no cambia: es el objeto real que la encargada tiene en la mano.
+*/
+:root {
+  --papel: #f2f4f8;
+  --panel: #e8ecf3;
+  --hoja: #ffffff;
+  --hoja-alta: #ffffff;
+  --linea: #dde2ea;
+  --linea-fuerte: #b9c1ce;
+  --grafito: #18202e;
+  --tenue: #586276;
+  --tinta: #18202e;
+
+  --sello: #2e46c8;
+  --sello-hondo: #1f319a;
+  --sello-claro: #e7ebfb;
+  --sobre-sello: #ffffff;
+
+  --precinto: #f5c400;
+  --precinto-hondo: #7a6000;
+  --precinto-claro: #fff5c7;
+
+  --llego: #18794e;
+  --llego-claro: #e1f3ea;
+  --falta: #a35d00;
+  --falta-claro: #fdeed6;
+  --rechazo: #c0352b;
+  --rechazo-claro: #fbe6e4;
+  --redirigir: #6342d0;
+  --redirigir-claro: #eee9fc;
+
+  --trama: rgb(24 32 46 / 0.07);
+  --sombra-hoja: 0 1px 0 rgb(24 32 46 / 0.04), 0 10px 30px -18px rgb(24 32 46 / 0.25);
+  --sombra-alta: 0 2px 0 rgb(24 32 46 / 0.04), 0 22px 44px -22px rgb(31 49 154 / 0.45);
+  color-scheme: light;
+}
+
+[data-tema='oscuro'] {
+  --papel: #0c1120;
+  --panel: #0f1527;
+  --hoja: #141b30;
+  --hoja-alta: #1a2239;
+  --linea: #232c46;
+  --linea-fuerte: #34405f;
+  --grafito: #e8ecf5;
+  --tenue: #9aa5bf;
+
+  --sello: #8296ff;
+  --sello-hondo: #a5b3ff;
+  --sello-claro: #1d2550;
+  --sobre-sello: #0c1120;
+
+  --precinto-hondo: #f2d25c;
+  --precinto-claro: #2a2410;
+
+  --llego: #4cc38a;
+  --llego-claro: #0f2a20;
+  --falta: #eaa647;
+  --falta-claro: #2d2111;
+  --rechazo: #f2766d;
+  --rechazo-claro: #321716;
+  --redirigir: #a98fff;
+  --redirigir-claro: #231b42;
+
+  --trama: rgb(232 236 245 / 0.045);
+  --sombra-hoja: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 12px 30px -18px rgb(0 0 0 / 0.7);
+  --sombra-alta: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 24px 48px -22px rgb(0 0 0 / 0.8);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Encode Sans Variable', system-ui, sans-serif;
+
+  --color-papel: var(--papel);
+  --color-panel: var(--panel);
+  --color-hoja: var(--hoja);
+  --color-hoja-alta: var(--hoja-alta);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-grafito: var(--grafito);
+  --color-tenue: var(--tenue);
+  --color-tinta: var(--tinta);
+
+  --color-sello: var(--sello);
+  --color-sello-hondo: var(--sello-hondo);
+  --color-sello-claro: var(--sello-claro);
+  --color-sobre-sello: var(--sobre-sello);
+
+  --color-precinto: var(--precinto);
+  --color-precinto-hondo: var(--precinto-hondo);
+  --color-precinto-claro: var(--precinto-claro);
+
+  --color-llego: var(--llego);
+  --color-llego-claro: var(--llego-claro);
+  --color-falta: var(--falta);
+  --color-falta-claro: var(--falta-claro);
+  --color-rechazo: var(--rechazo);
+  --color-rechazo-claro: var(--rechazo-claro);
+  --color-redirigir: var(--redirigir);
+  --color-redirigir-claro: var(--redirigir-claro);
+
+  --radius-etiqueta: 6px;
+  --radius-panel: 14px;
+
+  --shadow-hoja: var(--sombra-hoja);
+  --shadow-levantada: var(--sombra-alta);
+
+  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    background: var(--papel);
+  }
+
+  body {
+    @apply bg-papel text-grafito font-sans antialiased;
+    font-size: 1rem;
+    line-height: 1.55;
+    min-height: 100dvh;
+    transition: background-color 240ms ease, color 240ms ease;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    line-height: 1.15;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--sello);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--precinto);
+    color: var(--tinta);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--sello);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--linea-fuerte) transparent;
+  }
+
+  /* Las transiciones entre pantallas: rapidas, sin coreografia. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+  }
+}
+
+/* La mesa de clasificacion: una trama de puntos muy suave detras del contenido. */
+@utility mesa {
+  background-image: radial-gradient(var(--trama) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+/* Linea troquelada de un rotulo de envio. */
+@utility troquel {
+  background-image: radial-gradient(circle, var(--linea-fuerte) 1.2px, transparent 1.6px);
+  background-size: 9px 3px;
+  background-repeat: repeat-x;
+  background-position: center;
+  height: 3px;
+}
+
+@utility tabla-encabezado {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tenue);
+  letter-spacing: 0.01em;
+}
+
+@utility ancho-precinto {
+  font-stretch: 125%;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@utility ancho-denso {
+  font-stretch: 87.5%;
+}
+
+@utility ancho-titular {
+  font-stretch: 112%;
+}
+
+@utility cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
