@@ -4,13 +4,21 @@ import ar.edu.utn.frc.dsi.bolsines.control.GestorRecepcionDeBolsines;
 import ar.edu.utn.frc.dsi.bolsines.control.RecepcionException;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.DetalleBolsin;
 import ar.edu.utn.frc.dsi.bolsines.control.dto.InicioRecepcion;
+import ar.edu.utn.frc.dsi.bolsines.control.dto.ResultadoRecepcion;
+import ar.edu.utn.frc.dsi.bolsines.control.dto.ResumenRecepcion;
+import ar.edu.utn.frc.dsi.bolsines.entity.SituacionRecepcion;
 import jakarta.servlet.http.HttpSession;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -49,6 +57,28 @@ public class PantallaRecepcionDeBolsines {
             opcionRegistrarRecepcionDelBolsin(sesion); // entro directo al bolsin sin pasar por la bandeja
         }
         return gestor.tomarSeleccionBolsin(idBolsin);
+    }
+
+    /**
+     * Pasos 7 y 8: el EB indica como llego cada documentacion (id -> situacion). Devuelve como va a
+     * quedar todo para pedir la confirmacion (paso 9, solicitarConfirmacionRegistro en el front).
+     */
+    @PostMapping("/seleccion")
+    public ResumenRecepcion tomarSeleccionRecepcionBolsin(@RequestBody Map<Long, SituacionRecepcion> marcas) {
+        return gestor.tomarSeleccionRecepcionBolsin(marcas);
+    }
+
+    /** Paso 10: el EB confirma. Devuelve lo registrado y los avisos del CU 29 (informarEjecucionExitosa en el front). */
+    @PostMapping("/confirmacion")
+    public ResultadoRecepcion tomarConfirmacionRegistro() {
+        return gestor.tomarConfirmacionRegistro();
+    }
+
+    /** Observacion 1: el EB cancela la recepcion. No se registra nada. */
+    @DeleteMapping("/seleccion")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelar() {
+        gestor.cancelar();
     }
 
     /** El gestor rechazo la accion: el front muestra el mensaje en la misma pantalla, sin perder lo marcado. */
