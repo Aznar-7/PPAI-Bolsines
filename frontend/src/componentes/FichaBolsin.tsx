@@ -1,22 +1,43 @@
 import type { BolsinResumen } from '../api'
-import { fechaYHora, peso } from '../formato'
+import { fechaYHora, haceCuanto, peso } from '../formato'
 import { EtiquetaPrecinto } from './Precinto'
 
-/** Todo lo que hace falta para reconocer el bolsin que esta en la mesa. La usan la bandeja y el control. */
+/**
+ * El rotulo de envio del bolsin: lo mismo que esta pegado en la bolsa, para reconocerla en la mesa.
+ * La usan la bandeja (vista previa) y el control.
+ */
 export function FichaBolsin({ bolsin: b, cmDestino, conTransicion }: { bolsin: BolsinResumen; cmDestino: string; conTransicion?: boolean }) {
   return (
-    <div>
-      <p className="text-sm text-tenue">Bolsín N.º {b.numeroBolsin}</p>
-      <div className="mt-2">
-        <EtiquetaPrecinto numero={b.numeroPrecinto} grande id={conTransicion ? b.id : undefined} />
+    <div className="relative">
+      <div className="flex items-start justify-between gap-3 px-5 pt-5">
+        <div>
+          <p className="text-xs text-tenue">Bolsín</p>
+          <p className="text-2xl leading-none font-bold cifras ancho-titular">N.º {b.numeroBolsin}</p>
+        </div>
+        <EtiquetaPrecinto numero={b.numeroPrecinto} id={conTransicion ? b.id : undefined} />
       </div>
 
-      <ol className="mt-6 text-sm">
-        <Tramo punto="border-2 border-tenue bg-hoja" titulo="Sale de" valor={b.cmOrigen} detalle={fechaYHora(b.fechaEnvio)} linea />
-        <Tramo punto="bg-sello" titulo="Llega a" valor={cmDestino} detalle="Tu comisión" />
-      </ol>
+      <Troquel />
 
-      <dl className="mt-6 grid grid-cols-3 divide-x divide-linea rounded-lg border border-linea text-center">
+      <dl className="space-y-3 px-5">
+        <div className="grid grid-cols-[3rem_1fr] items-baseline gap-2">
+          <dt className="text-xs text-tenue">De</dt>
+          <dd>
+            <p className="text-lg leading-tight font-bold">{b.cmOrigen}</p>
+            <p className="text-xs text-tenue">
+              {haceCuanto(b.fechaEnvio).replace('enviado', 'Enviado')}, {fechaYHora(b.fechaEnvio)}
+            </p>
+          </dd>
+        </div>
+        <div className="grid grid-cols-[3rem_1fr] items-baseline gap-2">
+          <dt className="text-xs text-tenue">Para</dt>
+          <dd className="text-lg leading-tight font-bold">{cmDestino}</dd>
+        </div>
+      </dl>
+
+      <Troquel />
+
+      <dl className="grid grid-cols-3 px-5 pb-5 text-center">
         <Dato titulo="Remitos" valor={b.cantidadRemitos} />
         <Dato titulo="Documentos" valor={b.cantidadDocumentos} />
         <Dato titulo="Peso" valor={peso(b.peso)} />
@@ -25,25 +46,22 @@ export function FichaBolsin({ bolsin: b, cmDestino, conTransicion }: { bolsin: B
   )
 }
 
-function Tramo({ punto, titulo, valor, detalle, linea }: { punto: string; titulo: string; valor: string; detalle: string; linea?: boolean }) {
+/** Linea troquelada con las muescas de los costados, como un rotulo que se puede cortar. */
+function Troquel() {
   return (
-    <li className="relative grid grid-cols-[1.25rem_1fr] gap-x-3 pb-4 last:pb-0">
-      {linea && <span aria-hidden className="absolute top-4 bottom-0 left-[0.5625rem] w-0.5 bg-linea" />}
-      <span aria-hidden className={`relative mt-1 size-3 justify-self-center rounded-full ${punto}`} />
-      <div>
-        <p className="text-xs text-tenue">{titulo}</p>
-        <p className="font-semibold">{valor}</p>
-        <p className="text-xs text-tenue">{detalle}</p>
-      </div>
-    </li>
+    <div aria-hidden className="relative my-4">
+      <span className="absolute top-1/2 -left-[9px] size-[18px] -translate-y-1/2 rounded-full border border-linea bg-papel [clip-path:inset(0_0_0_50%)]" />
+      <div className="troquel mx-4" />
+      <span className="absolute top-1/2 -right-[9px] size-[18px] -translate-y-1/2 rounded-full border border-linea bg-papel [clip-path:inset(0_50%_0_0)]" />
+    </div>
   )
 }
 
 function Dato({ titulo, valor }: { titulo: string; valor: string | number }) {
   return (
-    <div className="px-2 py-3">
+    <div>
       <dt className="text-xs text-tenue">{titulo}</dt>
-      <dd className="mt-0.5 font-bold cifras">{valor}</dd>
+      <dd className="mt-0.5 text-lg font-bold cifras">{valor}</dd>
     </div>
   )
 }

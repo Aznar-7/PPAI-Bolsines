@@ -1,4 +1,4 @@
-import { ArrowRight, Inbox, Search, SearchX } from 'lucide-react'
+import { ArrowRight, Clock, Inbox, Search, SearchX } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate, useRouteLoaderData, useSearchParams } from 'react-router'
@@ -9,7 +9,7 @@ import { EtiquetaPrecinto } from '../componentes/Precinto'
 import { boton } from '../componentes/estilos'
 import { EncabezadoPagina, Tecla } from '../componentes/ui'
 import { filtrarBolsines, type SinResultados } from '../filtro'
-import { fechaYHora, haceCuanto, plural } from '../formato'
+import { diasEsperando, fechaYHora, haceCuanto, plural } from '../formato'
 
 type Orden = 'antiguos' | 'recientes'
 
@@ -250,7 +250,10 @@ function Fila({
         <span className="block text-xs">{plural(b.cantidadDocumentos, 'documento', 'documentos')}</span>
       </span>
       <span className="col-start-2 text-sm cifras md:col-start-auto md:text-right">
-        <span className="font-medium">{haceCuanto(b.fechaEnvio).replace('enviado ', '')}</span>
+        <span className={`inline-flex items-center gap-1.5 font-medium ${diasEsperando(b.fechaEnvio) >= 3 ? 'text-falta' : ''}`}>
+          {diasEsperando(b.fechaEnvio) >= 3 && <Clock aria-hidden className="size-3.5" />}
+          {haceCuanto(b.fechaEnvio).replace('enviado ', '')}
+        </span>
         <span className="block text-xs text-tenue">{fechaYHora(b.fechaEnvio)}</span>
       </span>
     </li>
@@ -261,7 +264,7 @@ function Fila({
 function Vista({ bolsin: b, cmDestino, onControlar }: { bolsin: BolsinResumen | null; cmDestino: string; onControlar: () => void }) {
   const quieto = useReducedMotion()
   return (
-    <aside aria-label="Bolsín elegido" className="rounded-panel border border-linea bg-hoja xl:sticky xl:top-8">
+    <aside aria-label="Bolsín elegido" className="overflow-hidden rounded-[18px] border border-linea bg-hoja shadow-levantada xl:sticky xl:top-8">
       <AnimatePresence mode="wait" initial={false}>
         {b ? (
           <motion.div
@@ -270,17 +273,18 @@ function Vista({ bolsin: b, cmDestino, onControlar }: { bolsin: BolsinResumen | 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, transition: { duration: 0.08 } }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="p-5"
           >
             <FichaBolsin bolsin={b} cmDestino={cmDestino} />
 
-            <button type="button" onClick={onControlar} className={`${boton.primario} mt-6 w-full py-3`}>
-              Controlar este bolsín
-              <ArrowRight aria-hidden className="size-4" />
-            </button>
-            <p className="mt-3 text-center text-xs text-tenue">
-              Vas a marcar documento por documento qué llegó. Nada se registra hasta que confirmes.
-            </p>
+            <div className="border-t border-linea bg-papel/60 p-5">
+              <button type="button" onClick={onControlar} className={`${boton.primario} group w-full py-3`}>
+                Controlar este bolsín
+                <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </button>
+              <p className="mt-3 text-center text-xs text-tenue">
+                Vas a marcar documento por documento qué llegó. Nada se registra hasta que confirmes.
+              </p>
+            </div>
           </motion.div>
         ) : (
           <motion.div key="nada" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 text-center text-sm text-tenue">

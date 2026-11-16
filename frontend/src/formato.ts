@@ -1,10 +1,16 @@
 /** "hace 3 días", "hoy", "ayer": cuanto hace que salio el bolsin. */
 export function haceCuanto(fechaIso: string | null, ahora = new Date()): string {
   if (!fechaIso) return 'sin fecha de envío'
-  const dias = Math.floor((inicioDelDia(ahora) - inicioDelDia(new Date(fechaIso))) / 86_400_000)
+  const dias = diasEsperando(fechaIso, ahora)
   if (dias <= 0) return 'enviado hoy'
   if (dias === 1) return 'enviado ayer'
   return `enviado hace ${dias} días`
+}
+
+/** Dias corridos desde que salio el bolsin (0 = hoy). */
+export function diasEsperando(fechaIso: string | null, ahora = new Date()): number {
+  if (!fechaIso) return 0
+  return Math.floor((inicioDelDia(ahora) - inicioDelDia(new Date(fechaIso))) / 86_400_000)
 }
 
 function inicioDelDia(fecha: Date) {
