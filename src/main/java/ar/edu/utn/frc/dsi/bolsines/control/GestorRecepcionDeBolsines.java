@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.annotation.SessionScope;
@@ -70,22 +69,13 @@ public class GestorRecepcionDeBolsines {
     private final ServicioSesion servicioSesion;
     private final InterfazNotificacion notificacion;
 
-    /**
-     * Mientras Vale no termine la sesion (T2) y los datos (T1), la pantalla trabaja con datos de
-     * mentira. Se controla con bolsines.gestor.datos-de-mentira en application.properties.
-     * En la T9 se pone en false y se borra GestorDatosDeMentira.
-     */
-    private final boolean usarDatosDeMentira;
-    private final GestorDatosDeMentira mentira = new GestorDatosDeMentira();
 
     public GestorRecepcionDeBolsines(BolsinRepository bolsinRepository, EstadoRepository estadoRepository,
-                                     ServicioSesion servicioSesion, InterfazNotificacion notificacion,
-                                     @Value("${bolsines.gestor.datos-de-mentira:false}") boolean usarDatosDeMentira) {
+                                     ServicioSesion servicioSesion, InterfazNotificacion notificacion) {
         this.bolsinRepository = bolsinRepository;
         this.estadoRepository = estadoRepository;
         this.servicioSesion = servicioSesion;
         this.notificacion = notificacion;
-        this.usarDatosDeMentira = usarDatosDeMentira;
     }
 
     // =====================================================================
@@ -95,9 +85,6 @@ public class GestorRecepcionDeBolsines {
     /** Pasos 1 a 4: CM del usuario logueado y bolsines en estado Enviado hacia esa CM. */
     @Transactional(readOnly = true)
     public InicioRecepcion opcionRegistrarRecepcionDeBolsin() {
-        if (usarDatosDeMentira) {
-            return mentira.inicio();
-        }
         empleadoLogueado = getUsuarioLogueado();
         cmUsuario = getCM();
 
@@ -112,14 +99,11 @@ public class GestorRecepcionDeBolsines {
     /** Pasos 5 y 6: guarda el bolsin elegido y devuelve sus remitos y documentacion. */
     @Transactional(readOnly = true)
     public DetalleBolsin tomarSeleccionBolsin(Long idBolsin) {
-        if (usarDatosDeMentira) {
-            return mentira.detalle(idBolsin);
-        }
         Bolsin bolsin = bolsinRepository.findById(idBolsin)
-                .orElseThrow(() -> new RecepcionException("No existe el bolsin seleccionado."));
+                .orElseThrow(() -> new RecepcionException("No existe el bolsín seleccionado."));
         if (!bolsin.esDeCM(cmUsuario) || !bolsin.esEnviado()) {
-            throw new RecepcionException("El bolsin " + bolsin.getNumeroBolsin()
-                    + " no esta pendiente de recepcion en tu comision medica.");
+            throw new RecepcionException("El bolsín " + bolsin.getNumeroBolsin()
+                    + " no está pendiente de recepción en tu comisión médica.");
         }
         idBolsinSeleccionado = bolsin.getId();
         opSeleccionada = null;
@@ -135,9 +119,6 @@ public class GestorRecepcionDeBolsines {
      */
     @Transactional(readOnly = true)
     public ResumenRecepcion tomarSeleccionRecepcionBolsin(Map<Long, SituacionRecepcion> marcas) {
-        if (usarDatosDeMentira) {
-            return mentira.resumen(marcas);
-        }
         Bolsin bolsin = getBolsinSeleccionado();
         validarMarcas(bolsin, marcas);
         opSeleccionada = new HashMap<>(marcas);
@@ -148,11 +129,8 @@ public class GestorRecepcionDeBolsines {
     /** Pasos 10 a 12: registra la recepcion, notifica (CU 29) y devuelve el resultado. */
     @Transactional
     public ResultadoRecepcion tomarConfirmacionRegistro() {
-        if (usarDatosDeMentira) {
-            return mentira.resultado();
-        }
         if (resumenSeleccionado == null) {
-            throw new RecepcionException("Primero hay que indicar como llego la documentacion.");
+            throw new RecepcionException("Primero hay que indicar cómo llegó la documentación.");
         }
         Bolsin bolsin = getBolsinSeleccionado();
 
@@ -162,7 +140,7 @@ public class GestorRecepcionDeBolsines {
             actualizarEstados(bolsin);
         } catch (TransicionInvalidaException e) {
             // La maquina de estados rechazo una operacion: no se guarda nada (la transaccion se deshace).
-            throw new RecepcionException("No se pudo registrar la recepcion: " + e.getMessage());
+            throw new RecepcionException("No se pudo registrar la recepción: " + e.getMessage());
         }
         bolsinRepository.save(bolsin);
 
@@ -176,10 +154,6 @@ public class GestorRecepcionDeBolsines {
 
     /** Observacion 1 / A6: descarta el bolsin seleccionado y las marcas sin guardar nada. */
     public void cancelar() {
-        if (usarDatosDeMentira) {
-            mentira.cancelar();
-            return;
-        }
         finDeCU();
     }
 
@@ -265,11 +239,11 @@ public class GestorRecepcionDeBolsines {
         }
         for (Map.Entry<Long, SituacionRecepcion> marca : marcas.entrySet()) {
             if (!idsDelBolsin.contains(marca.getKey())) {
-                throw new RecepcionException("Se marco una documentacion que no esta en este bolsin.");
+                throw new RecepcionException("Se marcó una documentación que no está en este bolsín.");
             }
             if (marca.getValue() == SituacionRecepcion.REDIRIGIR && !cmUsuario.esCentral()) {
-                throw new RecepcionException("Solo la Comision Medica Central puede redirigir documentacion "
-                        + "a un area interna.");
+                throw new RecepcionException("Solo la Comisión Médica Central puede redirigir documentación "
+                        + "a un área interna.");
             }
         }
     }
@@ -291,10 +265,10 @@ public class GestorRecepcionDeBolsines {
 
     private Bolsin getBolsinSeleccionado() {
         if (idBolsinSeleccionado == null) {
-            throw new RecepcionException("Primero hay que seleccionar un bolsin.");
+            throw new RecepcionException("Primero hay que seleccionar un bolsín.");
         }
         return bolsinRepository.findById(idBolsinSeleccionado)
-                .orElseThrow(() -> new RecepcionException("El bolsin seleccionado ya no existe."));
+                .orElseThrow(() -> new RecepcionException("El bolsín seleccionado ya no existe."));
     }
 
     private BolsinResumen resumir(Bolsin bolsin) {

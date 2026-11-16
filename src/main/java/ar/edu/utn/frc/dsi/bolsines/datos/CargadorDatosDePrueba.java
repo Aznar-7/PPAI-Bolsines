@@ -87,7 +87,7 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
             log.info("Datos de prueba cargados: {} bolsines. Ingresar con sromero / {} (CMC).",
                     bolsinRepository.count(), CONTRASENA);
         } else {
-            log.info("La base ya tenia datos: no se cargan los de prueba.");
+            log.info("La base ya tenía datos: no se cargan los de prueba.");
         }
     }
 
@@ -109,11 +109,11 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
     // =====================================================================
 
     private void cargarComisionesMedicas() {
-        central = cm(ComisionMedica.CODIGO_CENTRAL, "Comision Medica Central", "Av. de Mayo 760, C.A.B.A.");
-        mendoza = cm("MZA", "CM Mendoza", "San Martin 1150, Mendoza");
-        cordoba = cm("COR", "CM Cordoba", "Colon 350, Cordoba");
+        central = cm(ComisionMedica.CODIGO_CENTRAL, "Comisión Médica Central", "Av. de Mayo 760, C.A.B.A.");
+        mendoza = cm("MZA", "CM Mendoza", "San Martín 1150, Mendoza");
+        cordoba = cm("COR", "CM Córdoba", "Colón 350, Córdoba");
         salta = cm("SAL", "CM Salta", "Belgrano 420, Salta");
-        parana = cm("PAR", "CM Parana", "Urquiza 800, Parana");
+        parana = cm("PAR", "CM Paraná", "Urquiza 800, Paraná");
         laPlata = cm("LPL", "CM La Plata", "Calle 7 1020, La Plata");
     }
 
@@ -123,10 +123,10 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
     }
 
     private void cargarTiposDocumentacion() {
-        expediente = tipoDocumentacionRepository.save(new TipoDocumentacion("Expediente", "Expediente de un tramite"));
-        dictamen = tipoDocumentacionRepository.save(new TipoDocumentacion("Dictamen", "Dictamen de una comision medica"));
-        estudioMedico = tipoDocumentacionRepository.save(new TipoDocumentacion("Estudio medico", "Estudios e imagenes"));
-        cartaDocumento = tipoDocumentacionRepository.save(new TipoDocumentacion("Carta documento", "Comunicacion fehaciente"));
+        expediente = tipoDocumentacionRepository.save(new TipoDocumentacion("Expediente", "Expediente de un trámite"));
+        dictamen = tipoDocumentacionRepository.save(new TipoDocumentacion("Dictamen", "Dictamen de una comisión médica"));
+        estudioMedico = tipoDocumentacionRepository.save(new TipoDocumentacion("Estudio médico", "Estudios e imágenes"));
+        cartaDocumento = tipoDocumentacionRepository.save(new TipoDocumentacion("Carta documento", "Comunicación fehaciente"));
     }
 
     /**
@@ -134,17 +134,17 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
      * Los que busca el gestor usan las constantes de Estado.
      */
     private void cargarEstados() {
-        bolsinCreado = estado("Creado", "El bolsin se esta armando", Estado.AMBITO_BOLSIN);
-        bolsinCerrado = estado("Cerrado", "Bolsin precintado, listo para el correo", Estado.AMBITO_BOLSIN);
-        bolsinEnviado = estado(Estado.ENVIADO, "El correo retiro el bolsin", Estado.AMBITO_BOLSIN);
-        estado(Estado.RECIBIDO_EN_CM_DESTINO, "El bolsin llego a la CM destino", Estado.AMBITO_BOLSIN);
-        estado("De baja", "Bolsin eliminado", Estado.AMBITO_BOLSIN);
+        bolsinCreado = estado("Creado", "El bolsín se está armando", Estado.AMBITO_BOLSIN);
+        bolsinCerrado = estado("Cerrado", "Bolsín precintado, listo para el correo", Estado.AMBITO_BOLSIN);
+        bolsinEnviado = estado(Estado.ENVIADO, "El correo retiró el bolsín", Estado.AMBITO_BOLSIN);
+        estado(Estado.RECIBIDO_EN_CM_DESTINO, "El bolsín llegó a la CM destino", Estado.AMBITO_BOLSIN);
+        estado("De baja", "Bolsín eliminado", Estado.AMBITO_BOLSIN);
 
         estado("Creado", "Remito generado", Estado.AMBITO_REMITO);
-        remitoEnBolsinSaliente = estado("En bolsin saliente", "Remito dentro de un bolsin", Estado.AMBITO_REMITO);
-        remitoEnBolsinEnviado = estado("En bolsin enviado", "El bolsin del remito fue enviado", Estado.AMBITO_REMITO);
-        estado(Estado.RECIBIDO_Y_ACEPTADO, "Llego toda la documentacion", Estado.AMBITO_REMITO);
-        estado(Estado.RECIBIDO_Y_ACEPTADO_PARCIAL, "No llego bien toda la documentacion", Estado.AMBITO_REMITO);
+        remitoEnBolsinSaliente = estado("En bolsín saliente", "Remito dentro de un bolsín", Estado.AMBITO_REMITO);
+        remitoEnBolsinEnviado = estado("En bolsín enviado", "El bolsín del remito fue enviado", Estado.AMBITO_REMITO);
+        estado(Estado.RECIBIDO_Y_ACEPTADO, "Llegó toda la documentación", Estado.AMBITO_REMITO);
+        estado(Estado.RECIBIDO_Y_ACEPTADO_PARCIAL, "No llegó bien toda la documentación", Estado.AMBITO_REMITO);
     }
 
     private Estado estado(String nombre, String descripcion, String ambito) {
@@ -164,7 +164,7 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
         encargado("sromero", "Silvina", "Romero", central);
         Empleado deMendoza = encargado("pgil", "Pedro", "Gil", mendoza);
         Empleado deCordoba = encargado("lpaz", "Laura", "Paz", cordoba);
-        Empleado deSalta = encargado("mrios", "Martin", "Rios", salta);
+        Empleado deSalta = encargado("mrios", "Martín", "Ríos", salta);
         Empleado deParana = encargado("aluna", "Ana", "Luna", parana);
         Empleado deLaPlata = encargado("cvega", "Carlos", "Vega", laPlata);
 
@@ -174,16 +174,16 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
         Bolsin b1291 = enviado(1291, "004533", 480, cordoba, central, deCordoba, ahora.minusDays(2));
         remito(b1291, 410, deCordoba, ahora.minusDays(2),
                 doc("Expediente de incapacidad laboral - Legajo 8812", expediente),
-                doc("Dictamen de comision - Legajo 8812", dictamen),
-                doc("Estudio audiometrico - Legajo 8812", estudioMedico));
+                doc("Dictamen de comisión - Legajo 8812", dictamen),
+                doc("Estudio audiométrico - Legajo 8812", estudioMedico));
 
         // A3: el EB marca que falta la radiografia.
         Bolsin b1287 = enviado(1287, "004512", 1250, mendoza, central, deMendoza, ahora.minusDays(3));
         remito(b1287, 213, deMendoza, ahora.minusDays(3),
                 doc("Expediente de enfermedad profesional - Legajo 5521", expediente),
-                doc("Dictamen de comision - Legajo 5521", dictamen));
+                doc("Dictamen de comisión - Legajo 5521", dictamen));
         remito(b1287, 214, deMendoza, ahora.minusDays(3),
-                doc("Radiografia de rodilla - Legajo 6034", estudioMedico),
+                doc("Radiografía de rodilla - Legajo 6034", estudioMedico),
                 doc("Expediente de accidente in itinere - Legajo 6034", expediente));
         remito(b1287, 215, deMendoza, ahora.minusDays(3),
                 doc("Carta documento al empleador - Legajo 7190", cartaDocumento));
@@ -191,14 +191,14 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
         // A4: llega documentacion que no corresponde a la CMC.
         Bolsin b1302 = enviado(1302, "004577", 300, parana, central, deParana, ahora.minusDays(1));
         remito(b1302, 512, deParana, ahora.minusDays(1),
-                doc("Dictamen de comision - Legajo 3307", dictamen),
+                doc("Dictamen de comisión - Legajo 3307", dictamen),
                 doc("Expediente para CM Rosario - Legajo 3410", expediente));
 
         // A5: documentacion que hay que redirigir a un area de la sede central.
         Bolsin b1275 = enviado(1275, "004498", 650, salta, central, deSalta, ahora.minusDays(2));
         remito(b1275, 620, deSalta, ahora.minusDays(2),
-                doc("Recurso de apelacion - Legajo 9021 (para Asuntos Legales)", expediente),
-                doc("Dictamen de comision - Legajo 9021", dictamen));
+                doc("Recurso de apelación - Legajo 9021 (para Asuntos Legales)", expediente),
+                doc("Dictamen de comisión - Legajo 9021", dictamen));
         remito(b1275, 621, deSalta, ahora.minusDays(2),
                 doc("Estudio de resonancia - Legajo 9188", estudioMedico));
 
@@ -211,10 +211,10 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
         Bolsin b1315 = enviado(1315, "004620", 900, mendoza, central, deMendoza, ahora.minusHours(5));
         remito(b1315, 216, deMendoza, ahora.minusHours(5),
                 doc("Expediente de reingreso - Legajo 4470", expediente),
-                doc("Dictamen de comision - Legajo 4470", dictamen));
+                doc("Dictamen de comisión - Legajo 4470", dictamen));
         remito(b1315, 217, deMendoza, ahora.minusHours(5),
                 doc("Carta documento a la ART - Legajo 4512", cartaDocumento),
-                doc("Estudio ergometrico - Legajo 4512", estudioMedico));
+                doc("Estudio ergométrico - Legajo 4512", estudioMedico));
 
         // Va a CM Cordoba: no aparece para la CMC. Con lpaz sirve para ver que solo la CMC redirige.
         Bolsin b1320 = enviado(1320, "004640", 350, mendoza, cordoba, deMendoza, ahora.minusDays(1));
@@ -224,7 +224,7 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
         // Todavia Cerrado (el correo no lo retiro): no aparece en ningun listado.
         Bolsin b1325 = cerrado(1325, "004650", 200, salta, central, deSalta, ahora.minusHours(3));
         Remito remito622 = new Remito(622, ahora.minusHours(4), salta, central, remitoEnBolsinSaliente);
-        Documentacion pendiente = new Documentacion("Expediente pendiente de envio - Legajo 9300",
+        Documentacion pendiente = new Documentacion("Expediente pendiente de envío - Legajo 9300",
                 ahora.minusDays(1), proximoNumeroDocumentacion++, expediente);
         pendiente.remitar(ahora.minusHours(6), deSalta);
         pendiente.generarBolsin(ahora.minusHours(4), deSalta);
@@ -267,7 +267,7 @@ public class CargadorDatosDePrueba implements ApplicationRunner {
     }
 
     /**
-     * Remito "En bolsin enviado" cuya documentacion se lleva por la maquina de estados hasta
+     * Remito "En bolsín enviado" cuya documentacion se lleva por la maquina de estados hasta
      * EnBolsinEnviado, con el empleado de la CM de origen como responsable de cada cambio.
      */
     private void remito(Bolsin bolsin, int numero, Empleado responsable, LocalDateTime fechaEnvio,

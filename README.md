@@ -86,20 +86,6 @@ Otros comandos del front: `npm test` (Vitest), `npm run lint` (oxlint), `npm run
 
 </details>
 
-<details>
-<summary><b>🧪 Datos fijos del gestor (<code>bolsines.gestor.datos-de-mentira</code>)</b></summary>
-
-<br />
-
-Mientras se integraban las tarjetas, `GestorRecepcionDeBolsines` podía devolver datos fijos (`GestorDatosDeMentira`) para que la pantalla avanzara sin esperar. Se controla en `application.properties`:
-
-```properties
-bolsines.gestor.datos-de-mentira=true   # datos fijos, no toca la base
-```
-
-Con `false` el gestor trabaja contra la base, con los datos de la demo. Se apaga y se borra en la T9.
-
-</details>
 
 ---
 
@@ -133,6 +119,42 @@ Todos con contraseña `1234`. Hay un Encargado de Bolsines por comisión.
 | *Cancelar la recepción* | **Observación 1**: pide confirmación y no registra nada |
 
 Además hay dos bolsines que **no** aparecen en la bandeja de la CMC: el 004640 va a CM Córdoba (con `lpaz` se ve, y ahí la opción *Redirigir* no existe) y el 004650 todavía está Cerrado.
+
+### 🎤 Guion de la defensa
+
+**Antes de empezar**, con la app parada, dejar la base como recién cargada:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.jpa.hibernate.ddl-auto=create
+```
+
+Tener abiertas tres cosas: la app (http://localhost:8080), la consola de H2 (http://localhost:8080/h2-console) y el código en el IDE. Los roles son una propuesta: ajústenlos.
+
+| # | Quién | Qué se muestra | Dónde |
+|---|---|---|---|
+| 1 | Aznar | Ingreso con `sromero` y la bandeja con los 6 bolsines de la CMC. A1: buscar `9999`. A2: escribir `Rosario` en *CM de origen* | App |
+| 2 | Agustín | **Flujo principal** con el **004533**: *Llegó todo*, *Revisar y confirmar*, *Confirmar recepción*. El aviso pasa de *Enviando…* a *Enviado* | App |
+| 3 | Trini | **El patrón State en el código**: `Documentacion.aceptar` delega, `EstadoDocumentacion` prohíbe por defecto, `EnBolsinEnviado.aceptar` hace la transición, `RecibidaYAceptada` es final. Ver [el machete](docs/machete-patron-state.md) | IDE |
+| 4 | Vale | **Persistencia**: en H2, `SELECT asunto, estado_actual FROM documentacion;` muestra cómo quedó la documentación del 004533. Explicar el ORM y el conversor del estado | H2 |
+| 5 | Agustín | **A3** con el **004512**: *Falta* en la "Radiografía de rodilla". El remito 214 queda *aceptado parcial* y el aviso dice qué no llegó | App |
+| 6 | Aznar | **A4** con el **004577** (*No corresponde*) y **A5** con el **004498** (*Redirigir*). **A6**: *Volver y revisar* mantiene las marcas; *Cancelar la recepción* no registra nada | App |
+| 7 | Trini | En H2, el historial de un documento: cada cambio de estado con su fecha y su responsable | H2 |
+| 8 | Vale | Reiniciar la app y mostrar que lo registrado sigue ahí | App |
+
+Consulta para el paso 7:
+
+```sql
+SELECT d.asunto, c.estado, c.fecha_hora_inicio, c.fecha_hora_fin, e.apellido AS responsable
+FROM cambio_estado_documentacion c
+JOIN documentacion d ON d.id = c.documentacion_id
+LEFT JOIN empleado e ON e.id = c.responsablece_id
+WHERE d.asunto LIKE 'Radiograf%'
+ORDER BY c.fecha_hora_inicio;
+```
+
+**Plan B:** tener la app corriendo en una segunda computadora, con la base recién reiniciada.
+
+Documentos de apoyo: [machete del patrón State](docs/machete-patron-state.md) · [cambios para los diagramas](docs/cambios-para-diagramas.md) · [detalles de implementación para el informe](docs/detalles-de-implementacion.md).
 
 ### Las pantallas
 

@@ -49,7 +49,7 @@ class CasoDeUsoCompletoTest {
                 tipoDocumentacionRepository, estadoRepository, bolsinRepository).cargar();
         sesion = new ServicioSesion(usuarioRepository, empleadoRepository, sesionRepository);
         gestor = new GestorRecepcionDeBolsines(bolsinRepository, estadoRepository, sesion,
-                new NotificacionSimulada(comisionMedicaRepository), false);
+                new NotificacionSimulada(comisionMedicaRepository));
     }
 
     @Test
@@ -65,7 +65,7 @@ class CasoDeUsoCompletoTest {
                 .findFirst().orElseThrow().id();
         DetalleBolsin detalle = gestor.tomarSeleccionBolsin(id);
         Long radiografia = detalle.remitos().stream().flatMap(r -> r.documentacion().stream())
-                .filter(d -> d.asunto().startsWith("Radiografia")).findFirst().orElseThrow().id();
+                .filter(d -> d.asunto().startsWith("Radiografía")).findFirst().orElseThrow().id();
         gestor.tomarSeleccionRecepcionBolsin(Map.of(radiografia, SituacionRecepcion.FALTANTE));
 
         ResultadoRecepcion resultado = gestor.tomarConfirmacionRegistro();
@@ -77,7 +77,7 @@ class CasoDeUsoCompletoTest {
         assertEquals("mesa.mza@comisiones.gob.ar", aviso.email());
         assertTrue(aviso.asunto().contains("004512"));
         assertEquals("Recibidas y aceptadas: 4 de 5", aviso.detalle().get(0));
-        assertTrue(aviso.detalle().get(1).startsWith("No recibida: Radiografia de rodilla"));
+        assertTrue(aviso.detalle().get(1).startsWith("No recibida: Radiografía de rodilla"));
     }
 
     @Test
@@ -96,8 +96,8 @@ class CasoDeUsoCompletoTest {
         var aviso = gestor.tomarConfirmacionRegistro().avisos().get(0);
 
         assertEquals("CM Salta", aviso.cmDestino());
-        assertTrue(aviso.detalle().stream().anyMatch(l -> l.startsWith("Para redirigir a un area interna: Recurso")));
-        assertTrue(aviso.detalle().stream().anyMatch(l -> l.startsWith("Rechazada, no corresponde a esta comision: Estudio")));
+        assertTrue(aviso.detalle().stream().anyMatch(l -> l.startsWith("Para redirigir a un área interna: Recurso")));
+        assertTrue(aviso.detalle().stream().anyMatch(l -> l.startsWith("Rechazada, no corresponde a esta comisión: Estudio")));
     }
 
     private static void assertThrowsRecepcion(org.junit.jupiter.api.function.Executable accion) {
