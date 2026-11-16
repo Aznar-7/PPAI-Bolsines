@@ -54,14 +54,14 @@ describe('T7: ingreso, inicio y bandeja', () => {
   it('el inicio muestra el nombre y la comision medica del usuario', async () => {
     api({ '/api/recepcion': [200, inicio] })
     abrir('/inicio')
-    expect(await screen.findByRole('heading', { name: 'Silvina' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Silvina/ })).toBeInTheDocument()
     expect(screen.getAllByText('Comision Medica Central').length).toBeGreaterThan(0)
   })
 
   it('la bandeja lista CM origen y precinto, y avisa A1 con opcion de ver todos', async () => {
     api({ '/api/recepcion': [200, inicio] })
     abrir('/recepcion')
-    expect(await screen.findByText('CM Mendoza')).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: /CM Mendoza/ })).toBeInTheDocument()
     expect(screen.getByText('004533')).toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('Número de precinto'), '9999')
@@ -83,7 +83,8 @@ describe('T7: ingreso, inicio y bandeja', () => {
       '/api/recepcion/1': [200, { bolsin: inicio.bolsines[0], cmDestino: 'Comision Medica Central', remitos: [{ numero: 213, documentacion: [{ id: 101, numero: 101, asunto: 'Dictamen medico', tipo: 'Dictamen' }] }] }],
     })
     abrir('/recepcion')
-    await userEvent.click(await screen.findByRole('link', { name: /CM Mendoza/ }))
+    await userEvent.click(await screen.findByRole('option', { name: /CM Mendoza/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Controlar este bolsín/ }))
     expect(await screen.findByRole('heading', { name: 'Remito N.º 213' })).toBeInTheDocument()
     expect(screen.getByText('Dictamen medico')).toBeInTheDocument()
   })
