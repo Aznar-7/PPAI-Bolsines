@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Inbox, Search, SearchX } from 'lucide-react'
+import { ArrowRight, Clock, Inbox, Keyboard, Search, SearchX } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate, useRouteLoaderData, useSearchParams } from 'react-router'
@@ -71,6 +71,20 @@ export function Bandeja() {
       controlar(elegido)
     }
   }
+
+  // "/" lleva a la busqueda desde cualquier lado; Esc limpia los filtros.
+  useEffect(() => {
+    function atajo(e: globalThis.KeyboardEvent) {
+      const escribiendo = e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement
+      if (e.key === '/' && !escribiendo) {
+        e.preventDefault()
+        document.getElementById('precinto')?.focus()
+      }
+      if (e.key === 'Escape' && (precinto || cm)) verTodos()
+    }
+    window.addEventListener('keydown', atajo)
+    return () => window.removeEventListener('keydown', atajo)
+  })
 
   useEffect(() => {
     if (elegido) document.getElementById(`${idLista}-${elegido.id}`)?.scrollIntoView?.({ block: 'nearest' })
@@ -154,7 +168,7 @@ export function Bandeja() {
                 : plural(bolsines.length, 'bolsín por recibir', 'bolsines por recibir')}
             </p>
             {lista.length > 0 && (
-              <p className="hidden items-center gap-1.5 text-tenue md:flex">
+              <p className="hidden items-center gap-1.5 text-tenue md:flex xl:hidden">
                 <Tecla>↑</Tecla>
                 <Tecla>↓</Tecla> para moverte, <Tecla>Enter</Tecla> para controlar
               </p>
@@ -195,11 +209,21 @@ export function Bandeja() {
                   />
                 ))}
               </ul>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-linea bg-papel/70 px-5 py-2.5 text-sm text-tenue cifras">
+                <span>{lista.length === bolsines.length ? 'Total en la bandeja' : 'Total de lo filtrado'}</span>
+                <span>
+                  {plural(lista.reduce((t, b) => t + b.cantidadRemitos, 0), 'remito', 'remitos')},{' '}
+                  {plural(lista.reduce((t, b) => t + b.cantidadDocumentos, 0), 'documento', 'documentos')} para controlar
+                </span>
+              </div>
             </div>
           )}
         </div>
 
-        <Vista bolsin={sinResultados ? null : elegido} cmDestino={cmUsuario} onControlar={() => controlar(elegido)} />
+        <div className="space-y-4 xl:sticky xl:top-8">
+          <Vista bolsin={sinResultados ? null : elegido} cmDestino={cmUsuario} onControlar={() => controlar(elegido)} />
+          <Atajos />
+        </div>
       </div>
     </div>
   )
@@ -264,7 +288,7 @@ function Fila({
 function Vista({ bolsin: b, cmDestino, onControlar }: { bolsin: BolsinResumen | null; cmDestino: string; onControlar: () => void }) {
   const quieto = useReducedMotion()
   return (
-    <aside aria-label="Bolsín elegido" className="overflow-hidden rounded-[18px] border border-linea bg-hoja shadow-levantada xl:sticky xl:top-8">
+    <aside aria-label="Bolsín elegido" className="overflow-hidden rounded-[18px] border border-linea bg-hoja shadow-levantada">
       <AnimatePresence mode="wait" initial={false}>
         {b ? (
           <motion.div
@@ -332,5 +356,35 @@ function SinCoincidencias({
         Ver todos los bolsines
       </button>
     </div>
+  )
+}
+
+/** Los atajos de teclado a la vista: se aprenden usando, sin manual. */
+function Atajos() {
+  const atajos: [string[], string][] = [
+    [['/'], 'Buscar por precinto'],
+    [['↑', '↓'], 'Moverse por la lista'],
+    [['Enter'], 'Controlar el elegido'],
+    [['Esc'], 'Limpiar la búsqueda'],
+  ]
+  return (
+    <section aria-labelledby="titulo-atajos" className="hidden rounded-panel border border-linea bg-hoja/70 p-4 xl:block">
+      <h2 id="titulo-atajos" className="flex items-center gap-2 text-sm font-semibold">
+        <Keyboard aria-hidden className="size-4 text-tenue" />
+        Con el teclado
+      </h2>
+      <dl className="mt-3 space-y-2 text-sm">
+        {atajos.map(([teclas, accion]) => (
+          <div key={accion} className="flex items-center justify-between gap-3">
+            <dt className="text-tenue">{accion}</dt>
+            <dd className="flex gap-1">
+              {teclas.map((t) => (
+                <Tecla key={t}>{t}</Tecla>
+              ))}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   )
 }
