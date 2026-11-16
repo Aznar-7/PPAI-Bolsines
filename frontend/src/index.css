@@ -173,6 +173,13 @@
   }
 }
 
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
 /* La mesa de clasificacion: una trama de puntos muy suave detras del contenido. */
 @utility mesa {
   background-image: radial-gradient(var(--trama) 1px, transparent 1.2px);
