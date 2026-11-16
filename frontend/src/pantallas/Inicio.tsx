@@ -14,11 +14,12 @@ export function Inicio() {
 
   return (
     <div className="space-y-6">
+      <title>Inicio · Bolsines</title>
       <section
         aria-labelledby="saludo"
         className="relative overflow-hidden rounded-[20px] border border-linea bg-hoja shadow-hoja"
       >
-        <div className="grid gap-8 p-6 sm:p-8 lg:min-h-[22rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-10 lg:p-10">
+        <div className="grid gap-8 p-6 sm:p-8 xl:min-h-[22rem] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:p-10 xl:gap-10">
           <div className="flex flex-col">
             <p className="text-sm text-tenue first-letter:uppercase">{hoyLargo()}</p>
             <h1 id="saludo" className="mt-2 text-[2.25rem] leading-[1.05] font-bold tracking-[-0.025em] ancho-titular sm:text-[2.75rem]">
@@ -47,7 +48,7 @@ export function Inicio() {
               )}
             </p>
             {bolsines.length > 0 && (
-              <div className="mt-7 flex flex-wrap gap-3 lg:mt-auto lg:pt-8">
+              <div className="mt-7 flex flex-wrap gap-3 xl:mt-auto xl:pt-8">
                 <Link to="/recepcion" viewTransition className={`${boton.primario} px-5 py-3`}>
                   Empezar a recibir
                   <ArrowRight aria-hidden className="size-4" />
