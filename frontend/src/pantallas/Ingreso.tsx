@@ -139,16 +139,16 @@ export function Ingreso() {
 
           {modoDePrueba && (
             <div className="mt-10 rounded-xl border border-dashed border-precinto-hondo/40 bg-precinto-claro p-4 text-sm">
-              <p className="font-semibold">Modo de prueba</p>
+              <p className="font-semibold">Datos de prueba</p>
               <p className="mt-1 text-tenue">
-                Todavía no hay usuarios cargados. Entrá con <strong className="text-grafito">silvina</strong> y la
-                contraseña <strong className="text-grafito">bolsines</strong>.
+                Están cargados los usuarios de la demo. Para la Comisión Médica Central entrá con{' '}
+                <strong className="text-grafito">sromero</strong> y la contraseña <strong className="text-grafito">1234</strong>.
               </p>
               <button
                 type="button"
                 onClick={() => {
-                  setUsuario('silvina')
-                  setContrasena('bolsines')
+                  setUsuario('sromero')
+                  setContrasena('1234')
                   setError('')
                 }}
                 className="mt-3 font-semibold text-sello underline decoration-2 underline-offset-4"

@@ -31,7 +31,7 @@ public class GuardiaDeSesion implements HandlerInterceptor, WebMvcConfigurer {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        if (PantallaIngreso.haySesion(servicioSesion, request.getSession())) {
+        if (servicioSesion.haySesion()) {
             return true;
         }
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
