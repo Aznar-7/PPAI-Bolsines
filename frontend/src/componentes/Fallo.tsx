@@ -32,7 +32,7 @@ export function Fallo() {
           <Link
             to="/recepcion"
             viewTransition
-            className="rounded-lg bg-sello px-4 py-2.5 font-semibold text-white transition-colors hover:bg-sello-hondo"
+            className="rounded-lg bg-sello px-4 py-2.5 font-semibold text-sobre-sello transition-colors hover:bg-sello-hondo"
           >
             Volver a los bolsines
           </Link>

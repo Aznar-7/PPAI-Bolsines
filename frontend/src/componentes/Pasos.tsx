@@ -20,7 +20,7 @@ export function Pasos({ actual }: { actual: 1 | 2 | 3 }) {
                 className={`grid size-7 place-items-center rounded-full text-xs font-bold cifras transition-colors ${
                   estado === 'pendiente'
                     ? 'border-2 border-linea-fuerte text-tenue'
-                    : 'bg-sello text-white'
+                    : 'bg-sello text-sobre-sello'
                 }`}
               >
                 {estado === 'hecho' ? (

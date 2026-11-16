@@ -2,6 +2,7 @@ import { House, LogOut, PackageOpen, type LucideIcon } from 'lucide-react'
 import { NavLink, Outlet, useNavigate, useNavigation, useRouteLoaderData } from 'react-router'
 import { api, type InicioRecepcion } from '../api'
 import { Marca } from './Marca'
+import { SelectorTema } from './Tema'
 
 /**
  * Layout comun de las pantallas con sesion: navegacion lateral (solo lo que existe en el CU 28),
@@ -53,10 +54,14 @@ export function Marco() {
           </ul>
         </nav>
 
-        <div className="hidden lg:mt-auto lg:block">
+        <div className="hidden lg:mt-auto lg:block lg:space-y-3">
+          <div className="px-1">
+            <p className="mb-1.5 px-1 text-xs text-tenue">Tema</p>
+            <SelectorTema />
+          </div>
           <div className="rounded-xl border border-linea bg-hoja p-3">
             <div className="flex items-center gap-3">
-              <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-sello text-sm font-bold text-white">
+              <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-sello text-sm font-bold text-sobre-sello">
                 {iniciales}
               </span>
               <div className="min-w-0 leading-tight">
@@ -76,12 +81,15 @@ export function Marco() {
             </button>
           </div>
         </div>
+        <span className="lg:hidden">
+          <SelectorTema compacto />
+        </span>
         <button type="button" onClick={salir} aria-label="Salir" className="rounded-lg p-2 text-tenue hover:bg-hoja lg:hidden">
           <LogOut aria-hidden className="size-5" />
         </button>
       </aside>
 
-      <main id="contenido" className="min-w-0 px-4 pt-6 pb-16 sm:px-8 lg:px-10 lg:pt-8">
+      <main id="contenido" className="mesa min-w-0 px-4 pt-6 pb-16 sm:px-8 lg:px-10 lg:pt-8">
         <div className="mx-auto max-w-[76rem]">
           <Outlet />
         </div>
@@ -98,14 +106,14 @@ function Item({ a, icono: Icono, texto, contador }: { a: string; icono: LucideIc
         viewTransition
         className={({ isActive }) =>
           `flex items-center gap-3 rounded-lg px-3 py-2 text-[0.9375rem] font-medium transition-colors ${
-            isActive ? 'bg-hoja text-sello shadow-[0_1px_2px_rgb(27_34_48/0.08)]' : 'text-tenue hover:bg-hoja/60 hover:text-grafito'
+            isActive ? 'bg-hoja-alta text-sello shadow-[0_1px_2px_rgb(0_0_0/0.1)]' : 'text-tenue hover:bg-hoja/60 hover:text-grafito'
           }`
         }
       >
         <Icono aria-hidden className="size-[1.125rem] shrink-0" strokeWidth={2} />
         <span className="hidden sm:inline">{texto}</span>
         {contador !== undefined && contador > 0 && (
-          <span className="ml-auto rounded-full bg-precinto px-2 py-px text-xs font-bold text-grafito cifras" aria-label={`${contador} pendientes`}>
+          <span className="ml-auto rounded-full bg-precinto px-2 py-px text-xs font-bold text-tinta cifras" aria-label={`${contador} pendientes`}>
             {contador}
           </span>
         )}

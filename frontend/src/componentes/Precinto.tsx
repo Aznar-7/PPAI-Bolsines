@@ -15,7 +15,7 @@ export function EtiquetaPrecinto({
 }) {
   return (
     <span
-      className={`relative inline-flex w-fit items-center gap-2 rounded-etiqueta bg-precinto text-grafito shadow-[inset_0_-2px_0_rgb(0_0_0/0.12)] ${
+      className={`relative inline-flex w-fit items-center gap-2 rounded-etiqueta bg-precinto text-tinta shadow-[inset_0_-2px_0_rgb(0_0_0/0.12)] ${
         grande ? 'py-2 pr-4 pl-3 text-2xl' : 'py-1 pr-2.5 pl-2 text-base'
       }`}
       style={id ? { viewTransitionName: `precinto-${id}` } : undefined}
@@ -35,7 +35,7 @@ function conResaltado(numero: string, buscado: string): ReactNode {
   return (
     <>
       {numero.slice(0, desde)}
-      <mark className="rounded-[3px] bg-grafito px-px text-precinto">{numero.slice(desde, desde + buscado.length)}</mark>
+      <mark className="rounded-[3px] bg-tinta px-px text-precinto">{numero.slice(desde, desde + buscado.length)}</mark>
       {numero.slice(desde + buscado.length)}
     </>
   )
