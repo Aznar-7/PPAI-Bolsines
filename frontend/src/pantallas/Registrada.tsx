@@ -38,7 +38,7 @@ function Detalle({ resultado }: { resultado: ResultadoRecepcion }) {
             <p className="mt-3 max-w-[52ch] text-[1.0625rem] text-tenue">
               El bolsín N.º {bolsin.numeroBolsin} de {bolsin.cmOrigen} quedó en estado{' '}
               <strong className="font-semibold text-grafito">{resumen.estadoFinalBolsin}</strong>, a nombre de{' '}
-              {resultado.responsable}, el {fechaHora.format(new Date(resultado.fechaHora))}.
+              {resultado.responsable}, el {fechaHora.format(new Date(resultado.fechaHora)).replace(/\.$/, '')}.
             </p>
           </div>
           <Sello animar={!quieto} fecha={new Date(resultado.fechaHora)} />
