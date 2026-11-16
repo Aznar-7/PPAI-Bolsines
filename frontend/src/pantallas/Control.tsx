@@ -1,4 +1,4 @@
-import { FileText } from 'lucide-react'
+import { ClipboardList, FileText, FolderOpen, ScanLine, type LucideIcon } from 'lucide-react'
 import { Link, useLoaderData } from 'react-router'
 import type { DetalleBolsin } from '../api'
 import { FichaBolsin } from '../componentes/FichaBolsin'
@@ -51,7 +51,7 @@ export function Control() {
                     <tr key={doc.id} className="border-b border-linea last:border-b-0">
                       <td className="py-3.5 pr-3 pl-5">
                         <span className="flex items-center gap-3 font-medium">
-                          <FileText aria-hidden className="size-4 shrink-0 text-tenue" />
+                          <IconoTipo tipo={doc.tipo} />
                           {doc.asunto}
                         </span>
                       </td>
@@ -68,7 +68,7 @@ export function Control() {
         </div>
 
         <aside aria-label="Bolsín que estás controlando" className="space-y-4 xl:sticky xl:top-8">
-          <div className="rounded-panel border border-linea bg-hoja p-5">
+          <div className="overflow-hidden rounded-[18px] border border-linea bg-hoja shadow-levantada">
             <FichaBolsin bolsin={bolsin} cmDestino={cmDestino} conTransicion />
           </div>
           <Link to="/recepcion" viewTransition className={`${boton.secundario} w-full`}>
@@ -77,5 +77,21 @@ export function Control() {
         </aside>
       </div>
     </div>
+  )
+}
+
+/** Cada tipo de documentacion con su icono, para reconocerlo de un vistazo en la pila de papeles. */
+const ICONOS: [RegExp, LucideIcon][] = [
+  [/expediente/i, FolderOpen],
+  [/dictamen/i, ClipboardList],
+  [/estudio|radiograf|imagen/i, ScanLine],
+]
+
+function IconoTipo({ tipo }: { tipo: string }) {
+  const Icono = ICONOS.find(([patron]) => patron.test(tipo))?.[1] ?? FileText
+  return (
+    <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-sello-claro text-sello">
+      <Icono className="size-4" />
+    </span>
   )
 }
