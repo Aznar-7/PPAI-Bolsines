@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react'
 import { Link, isRouteErrorResponse, useRouteError } from 'react-router'
 import { ErrorApi } from '../api'
 
@@ -7,11 +8,13 @@ import { ErrorApi } from '../api'
  */
 export function Fallo() {
   const error = useRouteError()
+  const noExiste = isRouteErrorResponse(error) && error.status === 404
+  const titulo = noExiste ? 'Esta pantalla no existe' : 'No se pudo seguir'
   const mensaje =
     error instanceof ErrorApi
       ? error.message
-      : isRouteErrorResponse(error) && error.status === 404
-        ? 'Esa pantalla no existe.'
+      : noExiste
+        ? 'Puede que el enlace esté mal escrito. Desde la bandeja seguís donde estabas.'
         : 'Algo falló en el sistema. Volvé a intentar en unos segundos.'
 
   return (
@@ -19,12 +22,10 @@ export function Fallo() {
       <div className="rounded-panel border border-rechazo/25 bg-hoja p-6 shadow-hoja sm:p-8">
         <div className="flex items-start gap-4">
           <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-rechazo-claro text-rechazo">
-            <svg viewBox="0 0 20 20" className="size-5">
-              <path d="M10 5.5v5.5M10 14.2v.3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
+            <TriangleAlert className="size-5" />
           </span>
           <div>
-            <h1 className="text-xl font-bold">No se pudo seguir</h1>
+            <h1 className="text-xl font-bold">{titulo}</h1>
             <p className="mt-2 text-tenue">{mensaje}</p>
           </div>
         </div>

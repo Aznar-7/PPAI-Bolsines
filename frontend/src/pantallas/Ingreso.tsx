@@ -46,6 +46,7 @@ export function Ingreso() {
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
+      <title>Ingresar · Bolsines</title>
       <aside className="relative hidden overflow-hidden bg-[#1f319a] text-white lg:flex lg:flex-col oscuro:bg-[#111a46]">
         <div
           aria-hidden

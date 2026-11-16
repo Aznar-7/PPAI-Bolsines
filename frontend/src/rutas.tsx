@@ -1,13 +1,9 @@
 import { redirect, type RouteObject } from 'react-router'
 import { api, ErrorApi } from './api'
+import { Cargando } from './componentes/Cargando'
 import { Fallo } from './componentes/Fallo'
 import { Marco } from './componentes/Marco'
-import { Bandeja } from './pantallas/Bandeja'
-import { Confirmar } from './pantallas/Confirmar'
-import { Control } from './pantallas/Control'
 import { Ingreso } from './pantallas/Ingreso'
-import { Inicio } from './pantallas/Inicio'
-import { Registrada } from './pantallas/Registrada'
 
 /** Sin sesion, cualquier pantalla de la recepcion manda al ingreso y despues vuelve a donde estaba. */
 async function conSesion<T>(pedido: () => Promise<T>, url: string): Promise<T> {
@@ -22,10 +18,12 @@ async function conSesion<T>(pedido: () => Promise<T>, url: string): Promise<T> {
   }
 }
 
+// Cada pantalla se baja recien cuando se abre: el ingreso carga liviano.
 export const rutas: RouteObject[] = [
   {
     path: '/ingreso',
     Component: Ingreso,
+    HydrateFallback: Cargando,
     loader: async () => {
       const sesion = await api.sesion()
       if (sesion.logueado) throw redirect('/inicio')
@@ -37,23 +35,24 @@ export const rutas: RouteObject[] = [
     id: 'marco',
     Component: Marco,
     ErrorBoundary: Fallo,
+    HydrateFallback: Cargando,
     loader: ({ request }) => conSesion(api.opcionRegistrarRecepcionDelBolsin, request.url),
     shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
       // al volver a la bandeja desde otra pantalla se actualiza; filtrar no vuelve a pedir nada
       nextUrl.pathname !== currentUrl.pathname && defaultShouldRevalidate,
     children: [
-      { index: true, loader: () => redirect('/inicio') },
-      { path: 'inicio', Component: Inicio },
-      { path: 'recepcion', Component: Bandeja },
+      { index: true, loader: () => redirect('/inicio'), Component: () => null },
+      { path: 'inicio', lazy: async () => ({ Component: (await import('./pantallas/Inicio')).Inicio }) },
+      { path: 'recepcion', lazy: async () => ({ Component: (await import('./pantallas/Bandeja')).Bandeja }) },
       {
         path: 'recepcion/:idBolsin',
-        Component: Control,
         ErrorBoundary: Fallo,
         loader: ({ params, request }) => conSesion(() => api.tomarSeleccionBolsin(Number(params.idBolsin)), request.url),
+        lazy: async () => ({ Component: (await import('./pantallas/Control')).Control }),
       },
-      { path: 'recepcion/:idBolsin/confirmar', Component: Confirmar },
-      { path: 'recepcion/:idBolsin/registrada', Component: Registrada },
-      { path: '*', ErrorBoundary: Fallo, loader: () => { throw new Response('', { status: 404 }) } },
+      { path: 'recepcion/:idBolsin/confirmar', lazy: async () => ({ Component: (await import('./pantallas/Confirmar')).Confirmar }) },
+      { path: 'recepcion/:idBolsin/registrada', lazy: async () => ({ Component: (await import('./pantallas/Registrada')).Registrada }) },
+      { path: '*', ErrorBoundary: Fallo, Component: () => null, loader: () => { throw new Response('', { status: 404 }) } },
     ],
   },
 ]
