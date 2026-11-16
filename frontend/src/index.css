@@ -1,1 +1,108 @@
+@import '@fontsource-variable/encode-sans/wdth.css';
 @import 'tailwindcss';
+
+/*
+  Bolsines · sistema visual
+  El mundo de la recepcion: precintos amarillos numerados, remitos, y el sello de goma azul.
+  Una sola familia (Encode Sans, la de argentina.gob.ar) y su eje de ancho como herramienta:
+  ancha para numeros de precinto, normal para leer, angosta para datos densos.
+*/
+@theme {
+  --font-sans: 'Encode Sans Variable', system-ui, sans-serif;
+
+  --color-papel: #f3f5f8;
+  --color-hoja: #ffffff;
+  --color-linea: #dce1e9;
+  --color-linea-fuerte: #b9c1ce;
+  --color-grafito: #1b2230;
+  --color-tenue: #5a6476;
+
+  --color-sello: #2e46c8;
+  --color-sello-hondo: #1f319a;
+  --color-sello-claro: #e8ecfb;
+
+  --color-precinto: #f5c400;
+  --color-precinto-hondo: #8a6d00;
+  --color-precinto-claro: #fff6cc;
+
+  --color-llego: #1e8a5a;
+  --color-llego-claro: #e3f4ec;
+  --color-falta: #b86e00;
+  --color-falta-claro: #fdf0dc;
+  --color-rechazo: #c23a30;
+  --color-rechazo-claro: #fbe7e5;
+  --color-redirigir: #6a4bd6;
+  --color-redirigir-claro: #efeafc;
+
+  --radius-etiqueta: 6px;
+  --radius-panel: 14px;
+
+  --shadow-hoja: 0 1px 0 rgb(27 34 48 / 0.04), 0 8px 24px -12px rgb(27 34 48 / 0.18);
+  --shadow-levantada: 0 2px 0 rgb(27 34 48 / 0.05), 0 18px 40px -16px rgb(31 49 154 / 0.35);
+
+  --ease-sello: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-papel text-grafito font-sans antialiased;
+    font-size: 1rem;
+    line-height: 1.55;
+    font-feature-settings: 'tnum' 0;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    line-height: 1.15;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-sello);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-precinto);
+    color: var(--color-grafito);
+  }
+}
+
+@utility ancho-precinto {
+  font-stretch: 125%;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@utility ancho-denso {
+  font-stretch: 87.5%;
+}
+
+@utility cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
