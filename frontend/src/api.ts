@@ -54,6 +54,11 @@ export class ErrorApi extends Error {
   }
 }
 
+/** Si la sesion vencio a mitad de algo, al ingreso y despues de vuelta a donde estaba. */
+export function alIngreso(volver = location.pathname + location.search): string {
+  return `/ingreso?volver=${encodeURIComponent(volver)}`
+}
+
 async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
   let respuesta: Response
   try {

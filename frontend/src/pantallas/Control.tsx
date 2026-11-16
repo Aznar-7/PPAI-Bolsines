@@ -2,7 +2,7 @@ import { ArrowRight, CheckCheck, ClipboardList, FileText, FolderOpen, Mail, Scan
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { Link, useLoaderData, useNavigate, useRouteLoaderData } from 'react-router'
-import { api, ErrorApi, type DetalleBolsin, type InicioRecepcion, type Marcas, type Situacion } from '../api'
+import { alIngreso, api, ErrorApi, type DetalleBolsin, type InicioRecepcion, type Marcas, type Situacion } from '../api'
 import { CancelarRecepcion } from '../componentes/CancelarRecepcion'
 import { boton } from '../componentes/estilos'
 import { Pasos } from '../componentes/Pasos'
@@ -49,13 +49,15 @@ export function Control() {
       const resumen = await api.tomarSeleccionRecepcionBolsin(marcas)
       navegar(`/recepcion/${bolsin.id}/confirmar`, { state: { resumen }, viewTransition: true })
     } catch (e) {
+      if (e instanceof ErrorApi && e.estado === 401) return navegar(alIngreso(), { replace: true }) // las marcas quedan guardadas
       setError(e instanceof ErrorApi ? e.message : 'No se pudo preparar la confirmación.')
       setEnviando(false)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 xl:pb-0">
+      <title>{`Controlar bolsín ${bolsin.numeroBolsin} · Bolsines`}</title>
       <EncabezadoPagina
         migas={[
           { texto: 'Inicio', a: '/inicio' },
@@ -205,6 +207,29 @@ export function Control() {
           <CancelarRecepcion idBolsin={bolsin.id} className="w-full" />
         </aside>
       </div>
+
+      {/* En pantallas chicas el resumen queda abajo de todo: la accion principal viaja con la encargada. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-linea bg-hoja/90 px-4 py-3 backdrop-blur xl:hidden">
+        <div className="mx-auto flex max-w-[76rem] items-center gap-3">
+          <p className="min-w-0 flex-1 text-sm cifras" aria-hidden>
+            <span className="font-semibold">
+              {marcados} de {documentos.length}
+            </span>{' '}
+            <span className="text-tenue">marcados</span>
+          </p>
+          {faltan > 0 ? (
+            <button type="button" onClick={() => marcar(documentos.map((d) => d.id), 'RECIBIDA', true)} className={boton.secundario}>
+              <CheckCheck aria-hidden className="size-4 text-llego" />
+              {marcados === 0 ? 'Llegó todo' : 'El resto llegó'}
+            </button>
+          ) : (
+            <button type="button" onClick={revisar} disabled={enviando} className={boton.primario}>
+              Revisar y confirmar
+              <ArrowRight aria-hidden className="size-4" />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -263,7 +288,7 @@ function FilaDocumento({
           </p>
         </div>
       </div>
-      <fieldset className="flex flex-wrap gap-1.5">
+      <fieldset className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
         <legend className="sr-only">Cómo llegó: {asunto}</legend>
         {opciones.map((s) => {
           const { etiqueta, explicacion, icono: Icono, solido } = SITUACIONES[s]
@@ -272,7 +297,7 @@ function FilaDocumento({
             <label
               key={s}
               title={explicacion}
-              className={`relative inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-semibold transition-[background-color,border-color,color] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-sello ${
+              className={`relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 py-2 sm:py-1.5 text-sm font-semibold transition-[background-color,border-color,color] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-sello ${
                 elegida ? solido : 'border-linea bg-hoja text-tenue hover:border-linea-fuerte hover:text-grafito'
               }`}
             >

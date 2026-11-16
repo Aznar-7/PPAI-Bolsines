@@ -87,8 +87,9 @@ describe('T8: control, confirmacion y exito', () => {
   it('con "Llegó todo" y confirmar se completa el flujo principal y el aviso pasa a Enviado', async () => {
     const pedidos = api()
     const router = abrir('/recepcion/1')
-    await userEvent.click(await screen.findByRole('button', { name: 'Llegó todo' }))
-    await userEvent.click(screen.getByRole('button', { name: /Revisar y confirmar/ }))
+    // la barra fija de pantallas chicas repite la accion: se usa la del resumen
+    await userEvent.click((await screen.findAllByRole('button', { name: 'Llegó todo' }))[0])
+    await userEvent.click(screen.getAllByRole('button', { name: /Revisar y confirmar/ })[0])
     expect(await screen.findByRole('heading', { name: 'Revisá cómo va a quedar y confirmá' })).toBeInTheDocument()
     expect(pedidos.find((p) => p.url === '/api/recepcion/seleccion')?.cuerpo).toEqual({ 101: 'RECIBIDA', 102: 'RECIBIDA' })
 
@@ -104,8 +105,8 @@ describe('T8: control, confirmacion y exito', () => {
     api()
     abrir('/recepcion/1')
     await userEvent.click((await screen.findAllByRole('radio', { name: /Falta/ }))[1])
-    await userEvent.click(screen.getByRole('button', { name: 'El resto llegó' }))
-    await userEvent.click(screen.getByRole('button', { name: /Revisar y confirmar/ }))
+    await userEvent.click(screen.getAllByRole('button', { name: 'El resto llegó' })[0])
+    await userEvent.click(screen.getAllByRole('button', { name: /Revisar y confirmar/ })[0])
     const comprobante = await screen.findByRole('article', { name: 'Comprobante de la recepción' })
     expect(within(comprobante).getByText('Quedan como no recibida (1)')).toBeInTheDocument()
     expect(within(comprobante).getByText('Recibido y aceptado parcial')).toBeInTheDocument()
@@ -115,8 +116,8 @@ describe('T8: control, confirmacion y exito', () => {
     api()
     abrir('/recepcion/1')
     await userEvent.click((await screen.findAllByRole('radio', { name: /No corresponde/ }))[0])
-    await userEvent.click(screen.getByRole('button', { name: 'El resto llegó' }))
-    await userEvent.click(screen.getByRole('button', { name: /Revisar y confirmar/ }))
+    await userEvent.click(screen.getAllByRole('button', { name: 'El resto llegó' })[0])
+    await userEvent.click(screen.getAllByRole('button', { name: /Revisar y confirmar/ })[0])
     await userEvent.click(await screen.findByRole('button', { name: /Volver y revisar/ }))
     await screen.findByRole('heading', { name: 'Marcá cómo llegó cada documento' })
     expect(screen.getAllByRole('radio', { name: /No corresponde/ })[0]).toBeChecked()

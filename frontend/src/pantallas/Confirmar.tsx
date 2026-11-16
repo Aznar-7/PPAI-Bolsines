@@ -1,7 +1,7 @@
 import { ArrowLeft, Mail, Stamp, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
-import { api, ErrorApi, type ResumenRecepcion, type Situacion } from '../api'
+import { alIngreso, api, ErrorApi, type ResumenRecepcion, type Situacion } from '../api'
 import { CancelarRecepcion } from '../componentes/CancelarRecepcion'
 import { boton } from '../componentes/estilos'
 import { Pasos } from '../componentes/Pasos'
@@ -40,6 +40,7 @@ export function Confirmar() {
       borrarMarcas(id)
       navegar(`/recepcion/${id}/registrada`, { state: { resultado }, replace: true, viewTransition: true })
     } catch (e) {
+      if (e instanceof ErrorApi && e.estado === 401) return navegar(alIngreso(`/recepcion/${id}`), { replace: true })
       setError(e instanceof ErrorApi ? e.message : 'No se pudo registrar la recepción.')
       setEnviando(false)
     }
@@ -47,6 +48,7 @@ export function Confirmar() {
 
   return (
     <div className="space-y-6">
+      <title>{`Confirmar bolsín ${bolsin.numeroBolsin} · Bolsines`}</title>
       <EncabezadoPagina
         migas={[
           { texto: 'Inicio', a: '/inicio' },
