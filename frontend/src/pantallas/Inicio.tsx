@@ -1,9 +1,9 @@
-import { ArrowRight, CircleCheck, Coffee, ListChecks, PackageSearch } from 'lucide-react'
+import { ArrowRight, CircleCheck, Clock, Coffee, FileCheck2, Files, ListChecks, Package, PackageSearch, Weight, type LucideIcon } from 'lucide-react'
 import { Link, useRouteLoaderData } from 'react-router'
 import type { BolsinResumen, InicioRecepcion } from '../api'
 import { boton } from '../componentes/estilos'
 import { Perchero } from '../componentes/Perchero'
-import { haceCuanto, hoyLargo, plural, primerNombre, saludo } from '../formato'
+import { diasEsperando, haceCuanto, hoyLargo, peso, plural, primerNombre, saludo } from '../formato'
 
 /** Inicio: saludo, CM del usuario logueado (mostrarCM) y el acceso al paso 1 del CU. */
 export function Inicio() {
@@ -18,7 +18,7 @@ export function Inicio() {
         aria-labelledby="saludo"
         className="relative overflow-hidden rounded-[20px] border border-linea bg-hoja shadow-hoja"
       >
-        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-10 lg:p-10">
+        <div className="grid gap-8 p-6 sm:p-8 lg:min-h-[22rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-10 lg:p-10">
           <div className="flex flex-col">
             <p className="text-sm text-tenue first-letter:uppercase">{hoyLargo()}</p>
             <h1 id="saludo" className="mt-2 text-[2.25rem] leading-[1.05] font-bold tracking-[-0.025em] ancho-titular sm:text-[2.75rem]">
@@ -77,7 +77,7 @@ export function Inicio() {
       </section>
 
       {bolsines.length > 0 && (
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
           <section aria-labelledby="titulo-origen" className="rounded-panel border border-linea bg-hoja p-6">
             <h2 id="titulo-origen" className="font-bold">
               De dónde vienen
@@ -95,7 +95,10 @@ export function Inicio() {
                       {iniciales(origen)}
                     </span>
                     <span className="flex-1 truncate font-medium">{origen}</span>
-                    <span className="text-sm text-tenue cifras">{plural(cantidad, 'bolsín', 'bolsines')}</span>
+                    <span className="text-right text-sm leading-tight text-tenue cifras">
+                      {plural(cantidad.bolsines, 'bolsín', 'bolsines')}
+                      <span className="block text-xs">{plural(cantidad.documentos, 'documento', 'documentos')}</span>
+                    </span>
                     <ArrowRight aria-hidden className="size-4 text-tenue opacity-0 transition-opacity group-hover:opacity-100" />
                   </Link>
                 </li>
@@ -103,6 +106,7 @@ export function Inicio() {
             </ul>
           </section>
 
+          <EnLaMesa bolsines={bolsines} />
           <ComoSeRecibe />
         </div>
       )}
@@ -146,8 +150,48 @@ function iniciales(cm: string) {
   return nombre.slice(0, 2).toUpperCase()
 }
 
-function contarPorOrigen(bolsines: BolsinResumen[]): [string, number][] {
-  const cuenta = new Map<string, number>()
-  for (const b of bolsines) cuenta.set(b.cmOrigen, (cuenta.get(b.cmOrigen) ?? 0) + 1)
-  return [...cuenta].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+function contarPorOrigen(bolsines: BolsinResumen[]): [string, { bolsines: number; documentos: number }][] {
+  const cuenta = new Map<string, { bolsines: number; documentos: number }>()
+  for (const b of bolsines) {
+    const c = cuenta.get(b.cmOrigen) ?? { bolsines: 0, documentos: 0 }
+    cuenta.set(b.cmOrigen, { bolsines: c.bolsines + 1, documentos: c.documentos + b.cantidadDocumentos })
+  }
+  return [...cuenta].sort((a, b) => b[1].bolsines - a[1].bolsines || a[0].localeCompare(b[0]))
+}
+
+/** Cuanto trabajo hay por delante: lo que la encargada va a tener que abrir y controlar. */
+function EnLaMesa({ bolsines }: { bolsines: BolsinResumen[] }) {
+  const remitos = bolsines.reduce((t, b) => t + b.cantidadRemitos, 0)
+  const documentos = bolsines.reduce((t, b) => t + b.cantidadDocumentos, 0)
+  const gramos = bolsines.reduce((t, b) => t + (b.peso ?? 0), 0)
+  const demorados = bolsines.filter((b) => diasEsperando(b.fechaEnvio) >= 3).length
+  const filas: [LucideIcon, string, string][] = [
+    [Package, 'Bolsines', String(bolsines.length)],
+    [Files, 'Remitos', String(remitos)],
+    [FileCheck2, 'Documentos para controlar', String(documentos)],
+    [Weight, 'Peso total', peso(gramos || null)],
+  ]
+  return (
+    <section aria-labelledby="titulo-mesa" className="flex flex-col rounded-panel border border-linea bg-hoja p-6">
+      <h2 id="titulo-mesa" className="font-bold">
+        Lo que hay en la mesa
+      </h2>
+      <p className="text-sm text-tenue">Todo lo pendiente, sumado.</p>
+      <dl className="mt-4 divide-y divide-linea">
+        {filas.map(([Icono, titulo, valor]) => (
+          <div key={titulo} className="flex items-center gap-3 py-2.5">
+            <Icono aria-hidden className="size-4 text-tenue" />
+            <dt className="flex-1 text-sm">{titulo}</dt>
+            <dd className="font-bold cifras">{valor}</dd>
+          </div>
+        ))}
+      </dl>
+      {demorados > 0 && (
+        <p className="mt-auto flex items-center gap-2 rounded-lg bg-falta-claro px-3 py-2 text-sm font-medium text-falta">
+          <Clock aria-hidden className="size-4 shrink-0" />
+          {demorados === 1 ? '1 bolsín espera' : `${demorados} bolsines esperan`} hace 3 días o más.
+        </p>
+      )}
+    </section>
+  )
 }
