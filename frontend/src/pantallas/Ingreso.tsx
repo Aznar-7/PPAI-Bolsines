@@ -3,7 +3,9 @@ import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { api, ErrorApi, type EstadoSesion } from '../api'
 import { Marca } from '../componentes/Marca'
+import { boton } from '../componentes/estilos'
 import { PrecintoColgante } from '../componentes/Precinto'
+import { SelectorTema } from '../componentes/Tema'
 
 export function Ingreso() {
   const { modoDePrueba } = useLoaderData() as EstadoSesion
@@ -44,7 +46,7 @@ export function Ingreso() {
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
-      <aside className="relative hidden overflow-hidden bg-sello-hondo text-white lg:flex lg:flex-col">
+      <aside className="relative hidden overflow-hidden bg-[#1f319a] text-white lg:flex lg:flex-col oscuro:bg-[#111a46]">
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 h-28 bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.07)_0_2px,transparent_2px_10px)]"
@@ -53,10 +55,11 @@ export function Ingreso() {
           <Marca className="size-9" />
           <span className="text-lg font-bold">Bolsines</span>
         </div>
-        <div className="relative flex flex-1 items-start justify-center">
+        <div className="relative flex flex-1 flex-col items-center">
+          <BocaDelBolsin />
           <PrecintoColgante
             numero="004512"
-            className="h-[min(56vh,460px)] w-auto drop-shadow-[0_30px_40px_rgb(0_0_0/0.35)]"
+            className="-mt-3 h-[min(50vh,420px)] w-auto drop-shadow-[0_30px_40px_rgb(0_0_0/0.35)]"
           />
         </div>
         <p className="relative z-10 max-w-md p-10 text-lg leading-relaxed text-white/80">
@@ -65,7 +68,10 @@ export function Ingreso() {
         </p>
       </aside>
 
-      <main className="flex items-center justify-center px-4 py-16 sm:px-8">
+      <main className="relative flex items-center justify-center px-4 py-16 sm:px-8">
+        <div className="absolute top-4 right-4">
+          <SelectorTema compacto />
+        </div>
         <div className="w-full max-w-sm">
           <div className="mb-10 flex items-center gap-3 lg:hidden">
             <Marca className="size-9" />
@@ -125,7 +131,7 @@ export function Ingreso() {
             <button
               type="submit"
               disabled={enviando}
-              className="w-full rounded-xl bg-sello px-5 py-3.5 text-base font-semibold text-white shadow-levantada transition-[background-color,transform] hover:bg-sello-hondo active:scale-[0.99] disabled:cursor-wait disabled:opacity-80"
+              className={`${boton.primario} w-full py-3.5 text-base disabled:cursor-wait`}
             >
               {enviando ? 'Ingresando…' : 'Ingresar'}
             </button>
@@ -168,5 +174,22 @@ function Campo({ etiqueta, htmlFor, children }: { etiqueta: string; htmlFor: str
       </label>
       {children}
     </div>
+  )
+}
+
+/** La boca del bolsin de lona, cerrada con el fleje del precinto. */
+function BocaDelBolsin() {
+  return (
+    <svg viewBox="0 0 360 120" aria-hidden className="w-[min(70%,360px)]">
+      <path d="M20 0 H340 L318 92 Q180 118 42 92 Z" fill="#2c41b8" />
+      <path d="M20 0 H340 L318 92 Q180 118 42 92 Z" fill="url(#lona)" opacity="0.5" />
+      <path d="M44 78 Q180 102 316 78" fill="none" stroke="#c9d2ff" strokeOpacity="0.45" strokeWidth="2" strokeDasharray="7 6" />
+      <path d="M150 96 Q180 112 210 96" fill="none" stroke="#F5C400" strokeWidth="9" strokeLinecap="round" />
+      <defs>
+        <pattern id="lona" width="6" height="6" patternUnits="userSpaceOnUse">
+          <path d="M0 6 L6 0" stroke="#000" strokeOpacity="0.18" strokeWidth="1" />
+        </pattern>
+      </defs>
+    </svg>
   )
 }
