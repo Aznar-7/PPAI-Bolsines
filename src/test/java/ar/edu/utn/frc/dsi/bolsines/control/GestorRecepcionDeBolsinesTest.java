@@ -133,8 +133,7 @@ class GestorRecepcionDeBolsinesTest {
                 resumen -> {
                     notificados.add(resumen);
                     return List.of(new AvisoNotificacion("CM Mendoza", "mendoza@ejemplo.com", "Recepcion", List.of()));
-                },
-                false);
+                });
     }
 
     /** Documentacion llevada por la maquina de estados hasta EnBolsinEnviado, como en la realidad. */
@@ -346,7 +345,7 @@ class GestorRecepcionDeBolsinesTest {
         ServicioSesion sesionCordoba = mock(ServicioSesion.class);
         when(sesionCordoba.getEmpleadoLogueado()).thenReturn(encargadoCordoba);
         GestorRecepcionDeBolsines gestorCordoba = new GestorRecepcionDeBolsines(bolsinRepository,
-                estadoRepository, sesionCordoba, resumen -> List.of(), false);
+                estadoRepository, sesionCordoba, resumen -> List.of());
 
         InicioRecepcion inicio = gestorCordoba.opcionRegistrarRecepcionDeBolsin();
         assertFalse(inicio.cmEsCentral());
@@ -355,7 +354,7 @@ class GestorRecepcionDeBolsinesTest {
 
         RecepcionException error = assertThrows(RecepcionException.class,
                 () -> gestorCordoba.tomarSeleccionRecepcionBolsin(Map.of(idDoc, SituacionRecepcion.REDIRIGIR)));
-        assertTrue(error.getMessage().contains("Comision Medica Central"));
+        assertTrue(error.getMessage().contains("Comisión Médica Central"));
 
         ResumenRecepcion resumen = gestorCordoba.tomarSeleccionRecepcionBolsin(Map.of(idDoc, SituacionRecepcion.FALTANTE));
         assertEquals(SituacionRecepcion.FALTANTE, resumen.documentacion().get(0).situacion());

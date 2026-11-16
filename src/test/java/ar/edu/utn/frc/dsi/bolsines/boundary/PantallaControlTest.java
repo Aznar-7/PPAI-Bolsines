@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * Criterios de la T8 contra la API de la pantalla, con el gestor real y los datos de la demo (T1).
  * Cada test usa un bolsin distinto porque confirmar cambia la base.
  */
-@SpringBootTest(properties = {"bolsines.gestor.datos-de-mentira=false", "bolsines.datos-de-prueba.cargar=true",
+@SpringBootTest(properties = {"bolsines.datos-de-prueba.cargar=true",
         "spring.datasource.url=jdbc:h2:mem:pantalla-control-test"})
 @AutoConfigureMockMvc
 class PantallaControlTest {
@@ -96,6 +96,6 @@ class PantallaControlTest {
         mvc.perform(post("/api/recepcion/seleccion").session(sesion).contentType(MediaType.APPLICATION_JSON)
                         .content(marcas(idDoc, "REDIRIGIR")))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value(Matchers.containsString("Comision Medica Central")));
+                .andExpect(jsonPath("$.detail").value(Matchers.containsString("Comisión Médica Central")));
     }
 }

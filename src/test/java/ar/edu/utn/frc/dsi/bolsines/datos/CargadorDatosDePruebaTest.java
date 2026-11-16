@@ -67,7 +67,7 @@ class CargadorDatosDePruebaTest {
                 .filter(e -> e.getUsuario().getName().equals(usuario)).findFirst().orElseThrow();
         ServicioSesion sesion = mock(ServicioSesion.class);
         when(sesion.getEmpleadoLogueado()).thenReturn(empleado);
-        return new GestorRecepcionDeBolsines(bolsinRepository, estadoRepository, sesion, resumen -> List.of(), false);
+        return new GestorRecepcionDeBolsines(bolsinRepository, estadoRepository, sesion, resumen -> List.of());
     }
 
     private Long idPorPrecinto(InicioRecepcion inicio, String precinto) {
@@ -151,7 +151,7 @@ class CargadorDatosDePruebaTest {
         Long id = idPorPrecinto(gestor.opcionRegistrarRecepcionDeBolsin(), "004512");
         DetalleBolsin detalle = gestor.tomarSeleccionBolsin(id);
         Long radiografia = detalle.remitos().stream().flatMap(r -> r.documentacion().stream())
-                .filter(d -> d.asunto().startsWith("Radiografia")).findFirst().orElseThrow().id();
+                .filter(d -> d.asunto().startsWith("Radiografía")).findFirst().orElseThrow().id();
         gestor.tomarSeleccionRecepcionBolsin(Map.of(radiografia, SituacionRecepcion.FALTANTE));
 
         gestor.tomarConfirmacionRegistro();

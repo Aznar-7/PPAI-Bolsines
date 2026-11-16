@@ -6,7 +6,7 @@ package ar.edu.utn.frc.dsi.bolsines.entity;
  */
 public enum SituacionRecepcion {
     /** Flujo principal: aceptar -> RecibidaYAceptada. */
-    RECIBIDA("Llego", "Recibida y aceptada"),
+    RECIBIDA("Llegó", "Recibida y aceptada"),
     /** A3: registrarFaltaDocumentacion -> NoRecibida. */
     FALTANTE("Falta", "No recibida"),
     /** A4: rechazar -> RecibidaYRechazada. */

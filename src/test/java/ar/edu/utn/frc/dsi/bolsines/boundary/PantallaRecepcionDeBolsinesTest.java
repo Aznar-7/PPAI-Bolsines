@@ -16,11 +16,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Criterios de aceptacion de la T7 contra la API de la pantalla, con los datos de prueba del gestor.
+ * Criterios de aceptacion de la T7 contra la API de la pantalla, con el gestor real y los datos de la demo (T1).
  * Los filtros A1/A2 y los textos se prueban en el front (frontend/src/pantallas/*.test.tsx).
  */
 // Base propia: el cargador de la demo llena esta base y no tiene que pisar la de los otros tests.
-@SpringBootTest(properties = {"bolsines.gestor.datos-de-mentira=true", "bolsines.datos-de-prueba.cargar=true",
+@SpringBootTest(properties = {"bolsines.datos-de-prueba.cargar=true",
         "spring.datasource.url=jdbc:h2:mem:pantalla-test"})
 @AutoConfigureMockMvc
 class PantallaRecepcionDeBolsinesTest {
@@ -60,15 +60,20 @@ class PantallaRecepcionDeBolsinesTest {
         mvc.perform(get("/api/recepcion").session(sesion))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombreEmpleado").value("Silvina Romero"))
-                .andExpect(jsonPath("$.cmUsuario").value("Comision Medica Central"))
-                .andExpect(jsonPath("$.bolsines[0].cmOrigen").value("CM Mendoza"))
-                .andExpect(jsonPath("$.bolsines[0].numeroPrecinto").value("004512"));
+                .andExpect(jsonPath("$.cmUsuario").value("Comisión Médica Central"))
+                .andExpect(jsonPath("$.bolsines.length()").value(6))
+                .andExpect(jsonPath("$.bolsines[?(@.numeroPrecinto == '004512')].cmOrigen").value("CM Mendoza"));
     }
 
     @Test
     void seleccionarUnBolsinDevuelveSusRemitosAunqueSeEntreDirecto() throws Exception {
+        // El id del 004512 se averigua en otra sesion: la que se prueba entra directo, sin pasar por la bandeja.
+        String inicio = mvc.perform(get("/api/recepcion").session(ingresar("sromero", "1234", 204)))
+                .andReturn().getResponse().getContentAsString();
+        Number id = com.jayway.jsonpath.JsonPath.<java.util.List<Number>>read(inicio,
+                "$.bolsines[?(@.numeroPrecinto == '004512')].id").get(0);
         MockHttpSession sesion = ingresar("sromero", "1234", 204);
-        mvc.perform(get("/api/recepcion/1").session(sesion))
+        mvc.perform(get("/api/recepcion/" + id).session(sesion))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.remitos[0].numero").value(213))
                 .andExpect(jsonPath("$.remitos[0].documentacion[0].asunto").exists());
@@ -79,7 +84,7 @@ class PantallaRecepcionDeBolsinesTest {
         MockHttpSession sesion = ingresar("sromero", "1234", 204);
         mvc.perform(get("/api/recepcion/99").session(sesion))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("No existe el bolsin 99"));
+                .andExpect(jsonPath("$.detail").value("No existe el bolsín seleccionado."));
     }
 
     @Test

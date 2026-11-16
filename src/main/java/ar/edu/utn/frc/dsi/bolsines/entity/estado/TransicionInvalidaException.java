@@ -4,6 +4,6 @@ package ar.edu.utn.frc.dsi.bolsines.entity.estado;
 public class TransicionInvalidaException extends RuntimeException {
 
     public TransicionInvalidaException(String operacion, EstadoDocumentacion estado) {
-        super("No se puede " + operacion + " una documentacion en estado " + estado.getNombre());
+        super("No se puede " + operacion + " una documentación en estado " + estado.getNombre());
     }
 }

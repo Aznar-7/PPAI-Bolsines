@@ -35,7 +35,7 @@ public class NotificacionSimulada implements InterfazNotificacion {
     @Override
     public List<AvisoNotificacion> notificarRecepcion(ResumenRecepcion resumen) {
         BolsinResumen bolsin = resumen.bolsin().bolsin();
-        String asunto = "Recepcion del bolsin " + bolsin.numeroBolsin() + " (precinto " + bolsin.numeroPrecinto()
+        String asunto = "Recepción del bolsín " + bolsin.numeroBolsin() + " (precinto " + bolsin.numeroPrecinto()
                 + ") en " + resumen.bolsin().cmDestino();
         List<String> detalle = armarDetalle(resumen);
 
@@ -60,8 +60,8 @@ public class NotificacionSimulada implements InterfazNotificacion {
             String linea = switch (documento.situacion()) {
                 case RECIBIDA -> null;
                 case FALTANTE -> "No recibida: ";
-                case NO_CORRESPONDE -> "Rechazada, no corresponde a esta comision: ";
-                case REDIRIGIR -> "Para redirigir a un area interna: ";
+                case NO_CORRESPONDE -> "Rechazada, no corresponde a esta comisión: ";
+                case REDIRIGIR -> "Para redirigir a un área interna: ";
             };
             if (linea != null) {
                 detalle.add(linea + documento.asunto() + " (remito " + documento.remito() + ")");
