@@ -24,6 +24,27 @@ export type DetalleBolsin = { bolsin: BolsinResumen; cmDestino: string; remitos:
 
 export type EstadoSesion = { logueado: boolean; modoDePrueba: boolean }
 
+/** Como llego cada documentacion (SituacionRecepcion en el back). */
+export type Situacion = 'RECIBIDA' | 'FALTANTE' | 'NO_CORRESPONDE' | 'REDIRIGIR'
+export type Marcas = Record<number, Situacion>
+
+export type ResumenRecepcion = {
+  bolsin: DetalleBolsin
+  estadoFinalBolsin: string
+  remitos: { numero: number; estadoFinal: string }[]
+  documentacion: { id: number; remito: number; asunto: string; tipo: string; situacion: Situacion }[]
+  cmANotificar: string[]
+}
+
+export type AvisoNotificacion = { cmDestino: string; email: string; asunto: string; detalle: string[] }
+
+export type ResultadoRecepcion = {
+  fechaHora: string
+  responsable: string
+  resumen: ResumenRecepcion
+  avisos: AvisoNotificacion[]
+}
+
 /** Error que el back explica en un ProblemDetail: el front muestra `mensaje` tal cual. */
 export class ErrorApi extends Error {
   readonly estado: number
@@ -58,4 +79,8 @@ export const api = {
   salir: () => pedir<void>('/api/sesion', { method: 'DELETE' }),
   opcionRegistrarRecepcionDelBolsin: () => pedir<InicioRecepcion>('/api/recepcion'),
   tomarSeleccionBolsin: (id: number) => pedir<DetalleBolsin>(`/api/recepcion/${id}`),
+  tomarSeleccionRecepcionBolsin: (marcas: Marcas) =>
+    pedir<ResumenRecepcion>('/api/recepcion/seleccion', { method: 'POST', body: JSON.stringify(marcas) }),
+  tomarConfirmacionRegistro: () => pedir<ResultadoRecepcion>('/api/recepcion/confirmacion', { method: 'POST' }),
+  cancelar: () => pedir<void>('/api/recepcion/seleccion', { method: 'DELETE' }),
 }
