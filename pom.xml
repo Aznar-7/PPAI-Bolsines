@@ -71,9 +71,11 @@
                         <goals><goal>install-node-and-npm</goal></goals>
                     </execution>
                     <execution>
-                        <id>npm-ci</id>
+                        <!-- install y no ci: si ya esta todo instalado no toca node_modules (ci lo borra
+                             entero y en Windows choca con un npm run dev abierto) -->
+                        <id>npm-install</id>
                         <goals><goal>npm</goal></goals>
-                        <configuration><arguments>ci</arguments></configuration>
+                        <configuration><arguments>install --no-audit --no-fund</arguments></configuration>
                     </execution>
                     <execution>
                         <id>npm-build</id>
