@@ -1,4 +1,4 @@
-import { ClipboardList, FileText, FolderOpen, ScanLine, type LucideIcon } from 'lucide-react'
+import { ClipboardList, FileText, FolderOpen, Mail, ScanLine, type LucideIcon } from 'lucide-react'
 import { Link, useLoaderData } from 'react-router'
 import type { DetalleBolsin } from '../api'
 import { FichaBolsin } from '../componentes/FichaBolsin'
@@ -85,6 +85,7 @@ const ICONOS: [RegExp, LucideIcon][] = [
   [/expediente/i, FolderOpen],
   [/dictamen/i, ClipboardList],
   [/estudio|radiograf|imagen/i, ScanLine],
+  [/carta|nota|oficio/i, Mail],
 ]
 
 function IconoTipo({ tipo }: { tipo: string }) {
