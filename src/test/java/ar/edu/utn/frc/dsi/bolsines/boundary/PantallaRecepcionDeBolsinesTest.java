@@ -19,7 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * Criterios de aceptacion de la T7 contra la API de la pantalla, con los datos de prueba del gestor.
  * Los filtros A1/A2 y los textos se prueban en el front (frontend/src/pantallas/*.test.tsx).
  */
-@SpringBootTest(properties = "bolsines.gestor.datos-de-mentira=true")
+// Base propia: el cargador de la demo llena esta base y no tiene que pisar la de los otros tests.
+@SpringBootTest(properties = {"bolsines.gestor.datos-de-mentira=true", "bolsines.datos-de-prueba.cargar=true",
+        "spring.datasource.url=jdbc:h2:mem:pantalla-test"})
 @AutoConfigureMockMvc
 class PantallaRecepcionDeBolsinesTest {
 
@@ -42,7 +44,7 @@ class PantallaRecepcionDeBolsinesTest {
 
     @Test
     void conDatosIncorrectosNoEntra() throws Exception {
-        MockHttpSession sesion = ingresar("silvina", "otra", 401);
+        MockHttpSession sesion = ingresar("sromero", "otra", 401);
         mvc.perform(get("/api/recepcion").session(sesion)).andExpect(status().isUnauthorized());
     }
 
@@ -53,7 +55,7 @@ class PantallaRecepcionDeBolsinesTest {
 
     @Test
     void usuarioValidoVeSuNombreSuCmYLosBolsinesEnviados() throws Exception {
-        MockHttpSession sesion = ingresar("silvina", "bolsines", 204);
+        MockHttpSession sesion = ingresar("sromero", "1234", 204);
         mvc.perform(get("/api/sesion").session(sesion)).andExpect(jsonPath("$.logueado").value(true));
         mvc.perform(get("/api/recepcion").session(sesion))
                 .andExpect(status().isOk())
@@ -65,7 +67,7 @@ class PantallaRecepcionDeBolsinesTest {
 
     @Test
     void seleccionarUnBolsinDevuelveSusRemitosAunqueSeEntreDirecto() throws Exception {
-        MockHttpSession sesion = ingresar("silvina", "bolsines", 204);
+        MockHttpSession sesion = ingresar("sromero", "1234", 204);
         mvc.perform(get("/api/recepcion/1").session(sesion))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.remitos[0].numero").value(213))
@@ -74,7 +76,7 @@ class PantallaRecepcionDeBolsinesTest {
 
     @Test
     void unRechazoDelGestorLlegaComoMensaje() throws Exception {
-        MockHttpSession sesion = ingresar("silvina", "bolsines", 204);
+        MockHttpSession sesion = ingresar("sromero", "1234", 204);
         mvc.perform(get("/api/recepcion/99").session(sesion))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("No existe el bolsin 99"));
@@ -82,7 +84,7 @@ class PantallaRecepcionDeBolsinesTest {
 
     @Test
     void cerrarSesionVuelveAPedirIngreso() throws Exception {
-        MockHttpSession sesion = ingresar("silvina", "bolsines", 204);
+        MockHttpSession sesion = ingresar("sromero", "1234", 204);
         mvc.perform(delete("/api/sesion").session(sesion)).andExpect(status().isNoContent());
         mvc.perform(get("/api/recepcion")).andExpect(status().isUnauthorized());
     }
