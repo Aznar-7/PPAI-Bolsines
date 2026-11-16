@@ -1,85 +1,138 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { ArrowRight, CircleCheck, Inbox, ListChecks, PackageSearch } from 'lucide-react'
 import { Link, useRouteLoaderData } from 'react-router'
-import type { InicioRecepcion } from '../api'
+import type { BolsinResumen, InicioRecepcion } from '../api'
 import { EtiquetaPrecinto } from '../componentes/Precinto'
-import { haceCuanto, plural, primerNombre, saludo } from '../formato'
+import { boton } from '../componentes/estilos'
+import { fechaYHora, haceCuanto, hoyLargo, plural, primerNombre, saludo } from '../formato'
 
 /** Inicio: saludo, CM del usuario logueado (mostrarCM) y el acceso al paso 1 del CU. */
 export function Inicio() {
   const { nombreEmpleado, cmUsuario, bolsines } = useRouteLoaderData('marco') as InicioRecepcion
-  const quieto = useReducedMotion()
-  const masViejo = bolsines.reduce<string | null>(
-    (viejo, b) => (b.fechaEnvio && (!viejo || b.fechaEnvio < viejo) ? b.fechaEnvio : viejo),
-    null,
-  )
+  const porAntiguedad = [...bolsines].sort((a, b) => (a.fechaEnvio ?? '').localeCompare(b.fechaEnvio ?? ''))
+  const primero = porAntiguedad[0]
+  const porOrigen = contarPorOrigen(bolsines)
 
   return (
-    <div className="space-y-10">
-      <header>
-        <p className="text-tenue">{saludo()},</p>
-        <h1 className="mt-1 text-4xl font-bold tracking-tight sm:text-5xl">{primerNombre(nombreEmpleado)}</h1>
-        <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-hoja px-3 py-1 text-sm shadow-hoja">
-          <span aria-hidden className="size-2 rounded-full bg-sello" />
-          {cmUsuario}
+    <div className="space-y-8">
+      <header className="border-b border-linea pb-6">
+        <p className="text-sm text-tenue first-letter:uppercase">{hoyLargo()}</p>
+        <h1 className="mt-1 text-[1.75rem] leading-tight font-bold tracking-[-0.015em]">
+          {saludo()}, {primerNombre(nombreEmpleado)}
+        </h1>
+        <p className="mt-1.5 text-tenue">
+          Estás recibiendo en <strong className="font-semibold text-grafito">{cmUsuario}</strong>.
         </p>
       </header>
 
-      <section aria-labelledby="titulo-mesa" className="rounded-panel bg-hoja p-6 shadow-hoja sm:p-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="titulo-mesa" className="text-2xl font-bold sm:text-3xl">
-              {bolsines.length === 0
-                ? 'No hay bolsines en camino'
-                : `${plural(bolsines.length, 'bolsín espera', 'bolsines esperan')} recepción`}
-            </h2>
-            <p className="mt-2 max-w-prose text-tenue">
-              {bolsines.length === 0
-                ? 'Cuando otra comisión despache un bolsín hacia la tuya, aparece acá.'
-                : `Todos enviados hacia ${cmUsuario}.${masViejo ? ` El primero salió ${haceCuanto(masViejo).replace('enviado ', '')}.` : ''}`}
-            </p>
-          </div>
-          {bolsines.length > 0 && (
-            <Link
-              to="/recepcion"
-              viewTransition
-              className="inline-flex shrink-0 items-center justify-center rounded-xl bg-sello px-6 py-3.5 text-base font-semibold text-white shadow-levantada transition-colors hover:bg-sello-hondo"
-            >
-              Empezar a recibir
-            </Link>
-          )}
+      {bolsines.length === 0 ? (
+        <div className="flex flex-col items-center rounded-panel border border-dashed border-linea-fuerte bg-hoja/60 px-6 py-16 text-center">
+          <Inbox aria-hidden className="size-9 text-tenue" />
+          <h2 className="mt-3 text-xl font-semibold">No hay bolsines en camino a tu comisión</h2>
+          <p className="mt-1 max-w-md text-tenue">Cuando otra comisión despache un bolsín hacia la tuya, aparece acá para que lo recibas.</p>
         </div>
+      ) : (
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <section aria-labelledby="titulo-pendientes" className="rounded-panel border border-linea bg-hoja">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-linea px-6 py-5">
+              <div>
+                <h2 id="titulo-pendientes" className="text-lg font-bold">
+                  {plural(bolsines.length, 'bolsín espera', 'bolsines esperan')} recepción
+                </h2>
+                <p className="text-sm text-tenue">Enviados hacia tu comisión y todavía sin registrar.</p>
+              </div>
+              <Link to="/recepcion" viewTransition className={boton.primario}>
+                Empezar a recibir
+                <ArrowRight aria-hidden className="size-4" />
+              </Link>
+            </div>
 
-        {bolsines.length > 0 && (
-          <div className="relative mt-10">
-            <div aria-hidden className="absolute inset-x-0 top-0 h-1 rounded-full bg-linea" />
-            <ul className="flex flex-wrap gap-x-6 gap-y-8 pt-0" aria-label="Bolsines por recibir">
-              {bolsines.map((b, i) => (
-                <motion.li
-                  key={b.id}
-                  initial={quieto ? false : { y: -28, opacity: 0, rotate: -6 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 160, damping: 11, delay: 0.15 + i * 0.07 }}
-                  style={{ transformOrigin: 'top center' }}
-                >
-                  <Link
-                    to={`/recepcion/${b.id}`}
-                    viewTransition
-                    className="group flex flex-col items-center rounded-lg pt-0 focus-visible:outline-offset-4"
-                    aria-label={`Recibir el bolsín ${b.numeroBolsin}, precinto ${b.numeroPrecinto}, desde ${b.cmOrigen}`}
-                  >
-                    <span aria-hidden className="h-5 w-0.5 bg-precinto-hondo/50" />
-                    <span className="origin-top transition-transform duration-300 ease-sello group-hover:rotate-3">
-                      <EtiquetaPrecinto numero={b.numeroPrecinto} id={b.id} grande />
-                    </span>
-                    <span className="mt-2 text-sm font-medium">{b.cmOrigen}</span>
-                    <span className="text-xs text-tenue">{haceCuanto(b.fechaEnvio)}</span>
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
+            {primero && <ElQueMasEspera bolsin={primero} />}
+
+            <div className="px-6 py-5">
+              <h3 className="text-sm font-semibold">Por comisión de origen</h3>
+              <ul className="mt-3 space-y-2.5">
+                {porOrigen.map(([origen, cantidad]) => (
+                  <li key={origen}>
+                    <Link
+                      to={`/recepcion?cm=${encodeURIComponent(origen)}`}
+                      viewTransition
+                      className="group grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-4 rounded-md text-sm"
+                    >
+                      <span className="truncate font-medium group-hover:text-sello group-hover:underline">{origen}</span>
+                      <span aria-hidden className="h-2 overflow-hidden rounded-full bg-papel">
+                        <span
+                          className="block h-full rounded-full bg-sello/70 transition-colors group-hover:bg-sello"
+                          style={{ width: `${(cantidad / porOrigen[0][1]) * 100}%` }}
+                        />
+                      </span>
+                      <span className="text-tenue cifras">{plural(cantidad, 'bolsín', 'bolsines')}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <ComoSeRecibe />
+        </div>
+      )}
     </div>
   )
+}
+
+function ElQueMasEspera({ bolsin: b }: { bolsin: BolsinResumen }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-linea bg-precinto-claro/60 px-6 py-5">
+      <EtiquetaPrecinto numero={b.numeroPrecinto} grande id={b.id} />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-tenue">El que más espera</p>
+        <p className="font-semibold">
+          {b.cmOrigen}, bolsín N.º <span className="cifras">{b.numeroBolsin}</span>
+        </p>
+        <p className="text-sm text-tenue">
+          {haceCuanto(b.fechaEnvio).replace('enviado', 'Enviado')} ({fechaYHora(b.fechaEnvio)})
+        </p>
+      </div>
+      <Link to={`/recepcion/${b.id}`} viewTransition className={boton.secundario}>
+        Recibir este
+      </Link>
+    </div>
+  )
+}
+
+/** Los tres pasos de una recepcion, para que nunca haya dudas de que viene despues. */
+function ComoSeRecibe() {
+  const pasos = [
+    { icono: PackageSearch, titulo: 'Elegí el bolsín', texto: 'Buscalo por el número del precinto o por la comisión que lo mandó.' },
+    { icono: ListChecks, titulo: 'Controlá lo que vino', texto: 'Marcá cada documento: llegó, falta o no corresponde.' },
+    { icono: CircleCheck, titulo: 'Confirmá', texto: 'Revisás cómo va a quedar todo y recién ahí se registra y se avisa a la comisión de origen.' },
+  ]
+  return (
+    <section aria-labelledby="titulo-como" className="rounded-panel border border-linea bg-panel/60 p-6">
+      <h2 id="titulo-como" className="font-bold">
+        Cómo se recibe un bolsín
+      </h2>
+      <ol className="mt-4 space-y-5">
+        {pasos.map(({ icono: Icono, titulo, texto }, i) => (
+          <li key={titulo} className="grid grid-cols-[2.25rem_1fr] gap-3">
+            <span aria-hidden className="grid size-9 place-items-center rounded-lg bg-hoja text-sello shadow-[0_1px_2px_rgb(27_34_48/0.08)]">
+              <Icono className="size-[1.125rem]" />
+            </span>
+            <div>
+              <p className="font-semibold">
+                <span className="text-tenue cifras">{i + 1}.</span> {titulo}
+              </p>
+              <p className="mt-0.5 text-sm text-tenue">{texto}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+function contarPorOrigen(bolsines: BolsinResumen[]): [string, number][] {
+  const cuenta = new Map<string, number>()
+  for (const b of bolsines) cuenta.set(b.cmOrigen, (cuenta.get(b.cmOrigen) ?? 0) + 1)
+  return [...cuenta].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 }
