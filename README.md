@@ -15,7 +15,43 @@ mvn test                 # corre los tests
 
 - Consola de la base: http://localhost:8080/h2-console
   JDBC URL `jdbc:h2:file:./data/bolsines`, usuario `sa`, sin contraseña.
-- **Volver los datos al estado inicial:** parar la aplicación y borrar la carpeta `data/`.
+
+## Datos de prueba
+
+La primera vez que arranca, con la base vacía, carga los datos de la demo (`datos/CargadorDatosDePrueba`). Las veces siguientes los encuentra guardados y no los vuelve a cargar: lo que se haga en la app persiste entre reinicios.
+
+**Volver los datos al estado inicial** (por ejemplo, para repetir la demo), con la app parada:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.jpa.hibernate.ddl-auto=create
+```
+
+Eso borra las tablas y las recarga. También sirve borrar la carpeta `data/` y arrancar normal.
+
+### Usuarios
+
+Todos con contraseña `1234`. Hay un Encargado de Bolsines por comisión:
+
+| Usuario | Encargado | Comisión |
+|---|---|---|
+| `sromero` | Silvina Romero | **Comisión Médica Central** (la única que puede redirigir) |
+| `pgil` | Pedro Gil | CM Mendoza |
+| `lpaz` | Laura Paz | CM Córdoba |
+| `mrios` | Martín Ríos | CM Salta |
+| `aluna` | Ana Luna | CM Paraná |
+| `cvega` | Carlos Vega | CM La Plata |
+
+### Qué bolsín usar en cada flujo (logueado como `sromero`)
+
+| Precinto | Desde | Contenido | Para mostrar |
+|---|---|---|---|
+| 004533 | CM Córdoba | 1 remito, 3 documentos | **Flujo principal**: marcar todo como recibido |
+| 004512 | CM Mendoza | 3 remitos, 5 documentos | **A3**: marcar como faltante la "Radiografía de rodilla" (remito 214) |
+| 004577 | CM Paraná | 1 remito, 2 documentos | **A4**: marcar como "no corresponde" el "Expediente para CM Rosario" |
+| 004498 | CM Salta | 2 remitos, 3 documentos | **A5**: redirigir el "Recurso de apelación" (para Asuntos Legales) |
+| 004601, 004620 | La Plata, Mendoza | | De repuesto, por si hay que repetir |
+
+Además hay dos bolsines que **no** tienen que aparecer en el listado de la CMC: el 004640 va a CM Córdoba (con `lpaz` se ve, y sirve para mostrar que desde otra comisión no se puede redirigir) y el 004650 todavía está Cerrado.
 
 ## Stack
 
@@ -31,6 +67,7 @@ src/main/java/ar/edu/utn/frc/dsi/bolsines/
 ├── entity/          entidades del dominio                <<entity>>
 │   └── estado/      PATRÓN STATE: EstadoDocumentacion + 9 estados     Trini (T3)
 ├── repository/      repositorios de Spring Data                       Vale (T1)
+├── datos/           carga de los datos de prueba de la demo           Vale (T1)
 └── servicio/        sesión y notificación CU 29 (simulada)            Vale (T2)
 ```
 
