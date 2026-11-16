@@ -3,9 +3,11 @@ import { api, ErrorApi } from './api'
 import { Fallo } from './componentes/Fallo'
 import { Marco } from './componentes/Marco'
 import { Bandeja } from './pantallas/Bandeja'
+import { Confirmar } from './pantallas/Confirmar'
 import { Control } from './pantallas/Control'
 import { Ingreso } from './pantallas/Ingreso'
 import { Inicio } from './pantallas/Inicio'
+import { Registrada } from './pantallas/Registrada'
 
 /** Sin sesion, cualquier pantalla de la recepcion manda al ingreso y despues vuelve a donde estaba. */
 async function conSesion<T>(pedido: () => Promise<T>, url: string): Promise<T> {
@@ -49,6 +51,8 @@ export const rutas: RouteObject[] = [
         ErrorBoundary: Fallo,
         loader: ({ params, request }) => conSesion(() => api.tomarSeleccionBolsin(Number(params.idBolsin)), request.url),
       },
+      { path: 'recepcion/:idBolsin/confirmar', Component: Confirmar },
+      { path: 'recepcion/:idBolsin/registrada', Component: Registrada },
       { path: '*', ErrorBoundary: Fallo, loader: () => { throw new Response('', { status: 404 }) } },
     ],
   },

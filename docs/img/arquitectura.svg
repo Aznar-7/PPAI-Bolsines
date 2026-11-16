@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-label="Arquitectura: el navegador con React habla por JSON con la pantalla (boundary), que le pide todo al gestor (control), que trabaja sobre las entidades y el patrón State, persistidas en H2.">
+  <style>
+    :root { --fondo:#f6f8fb; --caja:#ffffff; --linea:#cfd6e2; --texto:#18202e; --tenue:#5a6476; --sello:#2e46c8; --sello-claro:#e7ebfb; --precinto:#f5c400; --state:#6342d0; --state-claro:#eee9fc; --verde:#18794e; --verde-claro:#e1f3ea; }
+    @media (prefers-color-scheme: dark) {
+      :root { --fondo:#0f1527; --caja:#141b30; --linea:#2c3654; --texto:#e8ecf5; --tenue:#9aa5bf; --sello:#8296ff; --sello-claro:#1d2550; --state:#a98fff; --state-claro:#231b42; --verde:#4cc38a; --verde-claro:#0f2a20; }
+    }
+    text { font-family: 'Segoe UI', system-ui, sans-serif; fill: var(--texto); }
+    .h { font-size: 19px; font-weight: 700; }
+    .s { font-size: 14px; fill: var(--tenue); }
+    .m { font-size: 13.5px; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; }
+    .capa { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; fill: var(--tenue); }
+    .caja { fill: var(--caja); stroke: var(--linea); stroke-width: 1.5; }
+    .flecha { stroke: var(--sello); stroke-width: 2.5; fill: none; marker-end: url(#punta); }
+    .flujo { stroke-dasharray: 6 6; animation: corre 1.2s linear infinite; }
+    @keyframes corre { to { stroke-dashoffset: -12; } }
+    @media (prefers-reduced-motion: reduce) { .flujo { animation: none; } }
+  </style>
+  <defs>
+    <marker id="punta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--sello)" />
+    </marker>
+  </defs>
+  <rect width="1200" height="640" rx="24" fill="var(--fondo)" />
+
+  <!-- Navegador -->
+  <text class="capa" x="40" y="48">NAVEGADOR</text>
+  <rect class="caja" x="40" y="62" width="1120" height="100" rx="14" />
+  <text class="h" x="64" y="98">React + Vite + TypeScript</text>
+  <text class="s" x="64" y="124">Ingreso · Inicio · Bandeja · Control · Confirmar · Registrada</text>
+  <text class="s" x="64" y="146">Muestra lo que devuelve el gestor (mostrarCM, mostrarNroRemito, informarEjecucionExitosa…)</text>
+  <rect x="840" y="84" width="296" height="56" rx="10" fill="var(--sello-claro)" />
+  <text class="m" x="860" y="108" fill="var(--sello)">fetch('/api/…')  JSON</text>
+  <text class="s" x="860" y="128">misma cookie de sesión</text>
+
+  <path class="flecha flujo" d="M600 166 V214" />
+
+  <!-- Boundary -->
+  <text class="capa" x="40" y="236">&lt;&lt;BOUNDARY&gt;&gt;  boundary/</text>
+  <rect class="caja" x="40" y="250" width="1120" height="92" rx="14" />
+  <text class="h" x="64" y="284">PantallaRecepcionDeBolsines</text>
+  <text class="s" x="64" y="310">recibe la acción, se la pasa al gestor, devuelve el resultado</text>
+  <text class="m" x="64" y="330">GET /api/recepcion · GET /{id} · POST /seleccion · POST /confirmacion</text>
+  <text class="h" x="700" y="284">PantallaIngreso · GuardiaDeSesion</text>
+  <text class="s" x="700" y="310">login contra ServicioSesion; sin sesión, 401</text>
+
+  <path class="flecha flujo" d="M600 346 V394" />
+
+  <!-- Control + servicio -->
+  <text class="capa" x="40" y="416">&lt;&lt;CONTROL&gt;&gt;  control/ y servicio/</text>
+  <rect class="caja" x="40" y="430" width="660" height="80" rx="14" />
+  <text class="h" x="64" y="462">GestorRecepcionDeBolsines</text>
+  <text class="s" x="64" y="488">coordina el CU 28, no cambia estados por su cuenta</text>
+  <rect class="caja" x="724" y="430" width="436" height="80" rx="14" />
+  <text class="h" x="748" y="462">ServicioSesion · InterfazNotificacion</text>
+  <text class="s" x="748" y="488">quién está logueado · aviso del CU 29 (simulado)</text>
+
+  <path class="flecha flujo" d="M370 514 V554" />
+
+  <!-- Entity + State -->
+  <text class="capa" x="40" y="548">&lt;&lt;ENTITY&gt;&gt;</text>
+  <rect class="caja" x="40" y="560" width="760" height="60" rx="14" />
+  <text class="m" x="64" y="596">Bolsin → Remito → DetalleRemito → Documentacion</text>
+  <rect x="560" y="572" width="226" height="36" rx="10" fill="var(--state-claro)" />
+  <text class="m" x="574" y="596" fill="var(--state)">→ EstadoDocumentacion</text>
+  <rect x="824" y="560" width="336" height="60" rx="14" fill="var(--verde-claro)" stroke="var(--linea)" />
+  <text class="h" x="848" y="587" fill="var(--verde)">Spring Data JPA + H2</text>
+  <text class="s" x="848" y="607">data/bolsines.mv.db</text>
+  <path class="flecha" d="M804 590 H818" />
+</svg>

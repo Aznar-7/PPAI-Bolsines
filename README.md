@@ -1,36 +1,113 @@
-# PPAI Bolsines · CU 28 Registrar recepción de bolsín
+<div align="center">
 
-DSI 2026 · Grupo 4 · Entrega 2 (Diseño). Implementación del CU 28 con el **patrón State** sobre `Documentacion`.
+<img src="docs/img/banner.svg" alt="Bolsines: registrar la recepción de un bolsín, documento por documento" width="100%" />
 
-Tablero: https://juanagustingarcia74.atlassian.net/browse/PB-1
+<br />
 
-## Cómo correr
+![Java](https://img.shields.io/badge/Java-21-2e46c8?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-2e46c8?style=flat-square&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19-2e46c8?style=flat-square&logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-2e46c8?style=flat-square&logo=vite&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-7-2e46c8?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-2e46c8?style=flat-square&logo=tailwindcss&logoColor=white)
+![H2](https://img.shields.io/badge/H2-en_archivo-f5c400?style=flat-square)
+![Patrón](https://img.shields.io/badge/patrón-State-f5c400?style=flat-square)
 
-Requisitos: Java 21 y Maven.
+**PPAI · Diseño de Sistemas de Información 2026 · UTN FRC · Grupo 4**<br />
+CU 28 *Registrar recepción de bolsín* con el **patrón State** sobre `Documentacion`.
+
+[Correr la app](#-correr-la-app) ·
+[Recorrido](#-recorrido-de-la-demo) ·
+[Arquitectura](#%EF%B8%8F-arquitectura) ·
+[Flujo y llamadas](#-flujo-y-llamadas) ·
+[Tests](#-tests) ·
+[Equipo](#-equipo-y-dueños)
+
+</div>
+
+---
+
+## 📦 Qué es
+
+Las Comisiones Médicas (CM) se mandan documentación en **bolsines**: bolsas cerradas con un **precinto amarillo numerado**, que llevan remitos y, en cada remito, expedientes, dictámenes y estudios. Cuando un bolsín llega, la **Encargada de Bolsines** de la CM destino tiene que registrar qué vino.
+
+La app resuelve ese momento de punta a punta:
+
+1. **Elegir el bolsín** por el número de precinto que tiene en la mano.
+2. **Controlar** documento por documento: *Llegó*, *Falta*, *No corresponde* o *Redirigir*.
+3. **Confirmar** viendo antes cómo va a quedar todo.
+
+Al confirmar, cada documentación cambia de estado (**patrón State**) y se avisa por mail a la CM de origen (**CU 29**, simulado).
+
+<div align="center">
+<img src="docs/img/inicio-claro.png" alt="Inicio: los bolsines pendientes cuelgan como precintos de un perchero" width="49%" />
+<img src="docs/img/inicio-oscuro.png" alt="El mismo inicio en tema oscuro" width="49%" />
+<br /><sub>Inicio en tema claro y oscuro. Los bolsines pendientes cuelgan como precintos; el que más espera está marcado.</sub>
+</div>
+
+---
+
+## 🚀 Correr la app
+
+> [!TIP]
+> Solo hace falta **Java 21 y Maven**. No hay que instalar Node: Maven baja su propia copia y compila el front.
 
 ```bash
-mvn spring-boot:run      # levanta en http://localhost:8080
-mvn test                 # corre los tests
+mvn spring-boot:run
 ```
 
-- Consola de la base: http://localhost:8080/h2-console
-  JDBC URL `jdbc:h2:file:./data/bolsines`, usuario `sa`, sin contraseña.
+Abrí **http://localhost:8080** e ingresá con **`sromero` / `1234`** (Comisión Médica Central). La pantalla de ingreso ofrece completar esos datos con un clic.
 
-## Datos de prueba
+| Qué | Cómo |
+|---|---|
+| Correr todos los tests (Java + front) | `mvn test` |
+| Generar el jar | `mvn package` y después `java -jar target/bolsines-0.1.0.jar` |
+| Consola de la base | http://localhost:8080/h2-console · JDBC `jdbc:h2:file:./data/bolsines` · usuario `sa` sin contraseña |
+| Volver los datos al estado inicial | con la app parada: `mvn spring-boot:run -Dspring-boot.run.arguments=--spring.jpa.hibernate.ddl-auto=create` (o borrar `data/`) |
 
-La primera vez que arranca, con la base vacía, carga los datos de la demo (`datos/CargadorDatosDePrueba`). Las veces siguientes los encuentra guardados y no los vuelve a cargar: lo que se haga en la app persiste entre reinicios.
+<details>
+<summary><b>🛠️ Desarrollar el front con recarga en caliente</b></summary>
 
-**Volver los datos al estado inicial** (por ejemplo, para repetir la demo), con la app parada:
+<br />
+
+Dos terminales: Spring sin compilar el front, y Vite, que le pasa `/api` a Spring (así la cookie de sesión viaja sola).
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.jpa.hibernate.ddl-auto=create
+mvn spring-boot:run -Dskip.npm -Dskip.installnodenpm
 ```
 
-Eso borra las tablas y las recarga. También sirve borrar la carpeta `data/` y arrancar normal.
+```bash
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+```
+
+Otros comandos del front: `npm test` (Vitest), `npm run lint` (oxlint), `npm run build` (deja el build en `target/classes/static`).
+
+</details>
+
+<details>
+<summary><b>🧪 Datos fijos del gestor (<code>bolsines.gestor.datos-de-mentira</code>)</b></summary>
+
+<br />
+
+Mientras se integraban las tarjetas, `GestorRecepcionDeBolsines` podía devolver datos fijos (`GestorDatosDeMentira`) para que la pantalla avanzara sin esperar. Se controla en `application.properties`:
+
+```properties
+bolsines.gestor.datos-de-mentira=true   # datos fijos, no toca la base
+```
+
+Con `false` el gestor trabaja contra la base, con los datos de la demo. Se apaga y se borra en la T9.
+
+</details>
+
+---
+
+## 🧭 Recorrido de la demo
 
 ### Usuarios
 
-Todos con contraseña `1234`. Hay un Encargado de Bolsines por comisión:
+Todos con contraseña `1234`. Hay un Encargado de Bolsines por comisión.
 
 | Usuario | Encargado | Comisión |
 |---|---|---|
@@ -41,82 +118,197 @@ Todos con contraseña `1234`. Hay un Encargado de Bolsines por comisión:
 | `aluna` | Ana Luna | CM Paraná |
 | `cvega` | Carlos Vega | CM La Plata |
 
-### Qué bolsín usar en cada flujo (logueado como `sromero`)
+### Qué usar en cada flujo (como `sromero`)
 
-| Precinto | Desde | Contenido | Para mostrar |
-|---|---|---|---|
-| 004533 | CM Córdoba | 1 remito, 3 documentos | **Flujo principal**: marcar todo como recibido |
-| 004512 | CM Mendoza | 3 remitos, 5 documentos | **A3**: marcar como faltante la "Radiografía de rodilla" (remito 214) |
-| 004577 | CM Paraná | 1 remito, 2 documentos | **A4**: marcar como "no corresponde" el "Expediente para CM Rosario" |
-| 004498 | CM Salta | 2 remitos, 3 documentos | **A5**: redirigir el "Recurso de apelación" (para Asuntos Legales) |
-| 004601, 004620 | La Plata, Mendoza | | De repuesto, por si hay que repetir |
+| En la app | Para mostrar |
+|---|---|
+| Precinto **004533** (CM Córdoba, 1 remito, 3 documentos) | **Flujo principal**: *Llegó todo* y confirmar |
+| Precinto **004512** (CM Mendoza, 3 remitos, 5 documentos) | **A3**: marcar como *Falta* la "Radiografía de rodilla" (remito 214) |
+| Precinto **004577** (CM Paraná, 1 remito, 2 documentos) | **A4**: marcar como *No corresponde* el "Expediente para CM Rosario" |
+| Precinto **004498** (CM Salta, 2 remitos, 3 documentos) | **A5**: *Redirigir* el "Recurso de apelación" (para Asuntos Legales) |
+| Precintos **004601** y **004620** | De repuesto, por si hay que repetir |
+| Buscar el precinto **9999** | **A1**: "No hay ningún bolsín con el precinto 9999" |
+| Escribir **Rosario** en *CM de origen* | **A2**: "No llegó ningún bolsín desde Rosario" |
+| *Volver y revisar* en la confirmación | **A6**: vuelve al control con las marcas intactas |
+| *Cancelar la recepción* | **Observación 1**: pide confirmación y no registra nada |
 
-Además hay dos bolsines que **no** tienen que aparecer en el listado de la CMC: el 004640 va a CM Córdoba (con `lpaz` se ve, y sirve para mostrar que desde otra comisión no se puede redirigir) y el 004650 todavía está Cerrado.
+Además hay dos bolsines que **no** aparecen en la bandeja de la CMC: el 004640 va a CM Córdoba (con `lpaz` se ve, y ahí la opción *Redirigir* no existe) y el 004650 todavía está Cerrado.
 
-## Stack
+### Las pantallas
 
-Java 21 · Spring Boot 3.5 · Spring Data JPA (Hibernate) · H2 en archivo · Thymeleaf · Maven. Aplicación web.
+<table>
+<tr>
+<td width="50%"><img src="docs/img/ingreso.png" alt="Pantalla de ingreso" /><br /><b>Ingreso.</b> El precinto cuelga de la boca del bolsín. Error accesible, mostrar contraseña y vuelta a la pantalla pedida.</td>
+<td width="50%"><img src="docs/img/bandeja.png" alt="Bandeja de bolsines" /><br /><b>Recibir bolsines (pasos 1 a 5, A1, A2).</b> Búsqueda por precinto y CM de origen, tabla con la vista previa del rótulo del bolsín elegido y atajos de teclado.</td>
+</tr>
+<tr>
+<td><img src="docs/img/control.png" alt="Control documento por documento" /><br /><b>Controlar (pasos 6 a 8, A3, A4, A5).</b> Cada documento se marca con su opción explicada; al costado, cómo va quedando.</td>
+<td><img src="docs/img/confirmar.png" alt="Confirmación tipo comprobante" /><br /><b>Confirmar (pasos 9 y 10, A6).</b> Comprobante con el estado final de bolsín, remitos y documentación, y a quién se avisa.</td>
+</tr>
+<tr>
+<td colspan="2" align="center"><img src="docs/img/registrada.png" alt="Recepción registrada con el sello y los avisos" width="70%" /><br /><b>Recepción registrada (pasos 11 y 12).</b> Cae el sello, cada aviso pasa de <i>Enviando…</i> a <i>Enviado</i> y aparece "El mail ha sido enviado".</td>
+</tr>
+</table>
 
-## Estructura (sigue los estereotipos del diagrama)
+**Patrones de interfaz:** búsqueda con filtros, lista con selección (maestro-detalle), asistente por pasos, checklist por ítem con estado de color, diálogo de confirmación con resumen y mensaje de éxito con detalle. Además: tema claro y oscuro, barra lateral plegable, todo operable con teclado y respeto por *reducir movimiento*.
+
+---
+
+## 🏛️ Arquitectura
+
+Es un **monolito**: una sola app Spring Boot que sirve la API y el front ya compilado. Los paquetes siguen los **estereotipos del modelo de análisis**, así el código se lee igual que los diagramas.
+
+<div align="center">
+<img src="docs/img/arquitectura.svg" alt="Arquitectura en capas: React, boundary, control, entity y H2" width="100%" />
+</div>
 
 ```
 src/main/java/ar/edu/utn/frc/dsi/bolsines/
-├── boundary/        PantallaRecepcionDeBolsines          <<boundary>>   Aznar (T7, T8)
-├── control/         GestorRecepcionDeBolsines            <<control>>    Agustín (T5, T6)
-│   └── dto/         objetos que viajan entre gestor y pantalla
-├── entity/          entidades del dominio                <<entity>>
-│   └── estado/      PATRÓN STATE: EstadoDocumentacion + 9 estados     Trini (T3)
-├── repository/      repositorios de Spring Data                       Vale (T1)
-├── datos/           carga de los datos de prueba de la demo           Vale (T1)
-└── servicio/        sesión y notificación CU 29 (simulada)            Vale (T2)
+├── boundary/        PantallaRecepcionDeBolsines, PantallaIngreso, GuardiaDeSesion   <<boundary>>
+├── control/         GestorRecepcionDeBolsines                                       <<control>>
+│   └── dto/         lo que viaja entre gestor y pantalla (records)
+├── entity/          Bolsin, Remito, DetalleRemito, Documentacion, Estado…          <<entity>>
+│   └── estado/      PATRÓN STATE: EstadoDocumentacion + 9 estados
+├── repository/      repositorios de Spring Data
+├── datos/           carga de los datos de la demo
+└── servicio/        sesión y notificación del CU 29 (simulada)
+
+frontend/src/
+├── pantallas/       Ingreso, Inicio, Bandeja, Control, Confirmar, Registrada
+├── componentes/     Marco (layout), Precinto, Perchero, FichaBolsin, Pasos, Dialogo, Tema…
+├── api.ts           tipos iguales a los records de control/dto y las llamadas a la API
+├── situaciones.ts   Llegó / Falta / No corresponde / Redirigir, con su explicación
+└── rutas.tsx        rutas y guardia de sesión
 ```
 
-### Quién es dueño de qué
+**La pantalla del diagrama está en dos partes.** `PantallaRecepcionDeBolsines` (Java) recibe cada acción y se la pasa al gestor; las pantallas de React muestran lo que vuelve (`mostrarCM`, `mostrarNroRemito`, `solicitarConfirmacionRegistro`, `informarEjecucionExitosa`…). Ninguna de las dos decide nada: decide el gestor, y el gestor le pide a cada entidad que haga lo suyo.
+
+**Patrón State en una línea.** `Documentacion` no pregunta en qué estado está: le delega cada operación (`aceptar`, `rechazar`, `redirigir`, `registrarFaltaDocumentacion`…) a su `EstadoDocumentacion` actual. Lo que un estado no redefine queda prohibido (`TransicionInvalidaException`). El estado se guarda por su nombre (`EstadoDocumentacionConverter`). Se usa **`Registrada`** como en la máquina de estados (en el diagrama de clases figura "Registrado").
+
+| Capa | Tecnología |
+|---|---|
+| Front | React 19, Vite 8, TypeScript, React Router, Tailwind 4, Motion, lucide, Encode Sans |
+| API y dominio | Java 21, Spring Boot 3.5 (Web, Validation, Data JPA con Hibernate) |
+| Base | H2 en archivo (`data/bolsines.mv.db`) |
+| Build | Maven con `frontend-maven-plugin` (baja Node, compila y testea el front) |
+
+Más detalle para el informe: [`docs/detalles-de-implementacion.md`](docs/detalles-de-implementacion.md).
+
+---
+
+## 🔁 Flujo y llamadas
+
+### API de la pantalla
+
+| Método | Ruta | Llama a | Pasos del CU | Devuelve |
+|---|---|---|---|---|
+| `GET` | `/api/sesion` | `ServicioSesion.haySesion()` | | `{ logueado, modoDePrueba }` |
+| `POST` | `/api/sesion` | `ServicioSesion.iniciarSesion()` | | 204, o 401 con el error |
+| `DELETE` | `/api/sesion` | `ServicioSesion.cerrarSesion()` | | 204 |
+| `GET` | `/api/recepcion` | `opcionRegistrarRecepcionDeBolsin()` | 1 a 4 | `InicioRecepcion` |
+| `GET` | `/api/recepcion/{id}` | `tomarSeleccionBolsin(id)` | 5 y 6 | `DetalleBolsin` |
+| `POST` | `/api/recepcion/seleccion` | `tomarSeleccionRecepcionBolsin(marcas)` | 7 a 9 | `ResumenRecepcion` |
+| `POST` | `/api/recepcion/confirmacion` | `tomarConfirmacionRegistro()` | 10 a 12 | `ResultadoRecepcion` con los avisos |
+| `DELETE` | `/api/recepcion/seleccion` | `cancelar()` | Obs. 1 | 204 |
+
+- Sin sesión, todo `/api/recepcion/**` responde **401** (`GuardiaDeSesion`) y el front manda al ingreso.
+- Si el gestor rechaza algo (`RecepcionException`), la API responde **409** con el mensaje en `detail`. La pantalla lo muestra sin perder lo marcado.
+- `marcas` es `{ idDocumentacion: "RECIBIDA" | "FALTANTE" | "NO_CORRESPONDE" | "REDIRIGIR" }`. *Redirigir* solo lo acepta la CMC (A5).
+
+### Secuencia del flujo principal
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor EB as Encargada de Bolsines
+    participant UI as Pantallas (React)
+    participant P as PantallaRecepcionDeBolsines
+    participant G as GestorRecepcionDeBolsines
+    participant B as Bolsin / Remito / Documentacion
+    participant S as EstadoDocumentacion (State)
+    participant N as InterfazNotificacion (CU 29)
+
+    EB->>UI: Empezar a recibir
+    UI->>P: GET /api/recepcion
+    P->>G: opcionRegistrarRecepcionDeBolsin()
+    G-->>UI: CM del usuario y bolsines enviados hacia ella
+    EB->>UI: elige el bolsín por su precinto
+    UI->>P: GET /api/recepcion/{id}
+    P->>G: tomarSeleccionBolsin(id)
+    G-->>UI: remitos con número, documentación con asunto y tipo
+    EB->>UI: marca cada documento (o "Llegó todo")
+    UI->>P: POST /api/recepcion/seleccion
+    P->>G: tomarSeleccionRecepcionBolsin(marcas)
+    G-->>UI: cómo va a quedar todo
+    EB->>UI: Confirmar recepción
+    UI->>P: POST /api/recepcion/confirmacion
+    P->>G: tomarConfirmacionRegistro()
+    G->>B: recibirBolsin(...)
+    B->>S: aceptar() / registrarFaltaDocumentacion() / rechazar() / redirigir()
+    S-->>B: nuevo estado + CambioEstadoDocumentacion
+    G->>N: notificarRecepcion(resumen)
+    N-->>G: un aviso por CM de origen
+    G-->>UI: resultado y avisos
+    UI-->>EB: sello "Recibido", avisos Enviando… → Enviado
+```
+
+### Pantallas y caminos alternativos
+
+```mermaid
+flowchart LR
+    I([Ingreso]) --> H[Inicio]
+    H --> B[Recibir bolsines]
+    B -- "A1 / A2: sin resultados" --> B
+    B --> C[Controlar]
+    C -- "A3 Falta · A4 No corresponde · A5 Redirigir" --> C
+    C --> F[Confirmar]
+    F -- "A6: Volver y revisar" --> C
+    F --> R[Recepción registrada]
+    C -- "Obs. 1: Cancelar" --> B
+    F -- "Obs. 1: Cancelar" --> B
+    R -- "Recibir el siguiente" --> B
+```
+
+> [!NOTE]
+> **El mail está simulado**, como permite la cátedra. `NotificacionSimulada` arma cada aviso (a qué CM, a qué email, qué llegó y qué no), lo deja en el log como `[MAIL SIMULADO]` y lo devuelve. La pantalla muestra su envío. Para mandar mails de verdad alcanza con otra implementación de `InterfazNotificacion`; el gestor no cambia.
+
+---
+
+## ✅ Tests
+
+```bash
+mvn test                  # todo: JUnit (Java) y Vitest (front), desde Maven
+cd frontend && npm test   # solo el front
+```
+
+| Suite | Qué prueba |
+|---|---|
+| `MaquinaEstadosDocumentacionTest` | Cada transición permitida y prohibida del patrón State |
+| `GestorRecepcionDeBolsinesTest` | Flujo principal y A3 a A5 del gestor contra la base |
+| `CargadorDatosDePruebaTest`, `CasoDeUsoCompletoTest`, `ServicioSesionTest` | Datos de la demo, CU completo y sesión |
+| `PantallaRecepcionDeBolsinesTest` | Criterios de la T7 sobre la API: sesión, 401, datos del usuario, rechazos del gestor |
+| `PantallaControlTest` | Criterios de la T8 con el gestor real: flujo principal, faltante, cancelar, redirigir fuera de la CMC |
+| `filtro.test.ts` | Búsqueda por precinto y CM de origen (A1, A2) |
+| `pantallas.test.tsx` | Ingreso, inicio, bandeja y selección |
+| `recepcion.test.tsx` | Control, Redirigir solo para la CMC, resumen, *Volver y revisar*, cancelar y envío simulado |
+
+---
+
+## 👥 Equipo y dueños
+
+Una rama por tarjeta desde `main` (`feature/t7-pantalla-bandeja`, `feature/t8-pantalla-control`…) y commits con la clave de Jira: `PB-10 feat(front): …`. Tablero: [PB en Jira](https://juanagustingarcia74.atlassian.net/browse/PB-1).
 
 Nadie toca archivos de otro: si necesitás un cambio, se lo pedís al dueño.
 
-| Archivo(s) | Dueño | Tarjeta |
+| Archivos | Dueño | Tarjeta |
 |---|---|---|
-| `ComisionMedica`, `Empleado`, `Usuario`, `Sesion`, `TipoDocumentacion`, `repository/*`, `application.properties`, carga de datos | Vale | T1 |
+| `ComisionMedica`, `Empleado`, `Usuario`, `Sesion`, `TipoDocumentacion`, `repository/*`, `datos/*`, `application.properties` | Vale | T1 |
 | `servicio/*` | Vale | T2 |
 | `entity/estado/*` | Trini | T3 |
 | `Documentacion`, `CambioEstadoDocumentacion`, tests de la máquina de estados | Trini | T4 |
 | `control/*`, `Bolsin`, `Remito`, `DetalleRemito`, `CambioEstadoBolsin`, `Estado` | Agustín | T5, T6 |
-| `boundary/*`, `templates/*`, `static/*` | Aznar | T7, T8 |
+| `boundary/*`, `frontend/*` | Aznar | T7, T8 |
 
-Cada método pendiente lanza `UnsupportedOperationException("TODO Tn")` con el número de tarjeta que lo completa. Para ver lo tuyo: buscá `TODO T3` (o el que corresponda).
-
-## Contrato gestor ↔ pantalla
-
-La pantalla solo usa estos cinco métodos de `GestorRecepcionDeBolsines`. **No se cambian sin avisar.**
-
-| Método | Pasos del CU | Devuelve |
-|---|---|---|
-| `opcionRegistrarRecepcionDeBolsin()` | 1 a 4 | `InicioRecepcion`: CM del usuario y bolsines enviados hacia ella |
-| `tomarSeleccionBolsin(Long idBolsin)` | 5 y 6 | `DetalleBolsin`: remitos y documentación (asunto y tipo) |
-| `tomarSeleccionRecepcionBolsin(Map<Long, SituacionRecepcion>)` | 7 a 9 | `ResumenRecepcion`: cómo va a quedar todo |
-| `tomarConfirmacionRegistro()` | 10 a 12 | `ResultadoRecepcion`: lo registrado y los avisos del CU 29 |
-| `cancelar()` | Obs. 1 / A6 | nada |
-
-`SituacionRecepcion` es cómo llegó cada documentación: `RECIBIDA` (principal), `FALTANTE` (A3), `NO_CORRESPONDE` (A4), `REDIRIGIR` (A5, solo CMC).
-
-Mientras el gestor real no esté, esos métodos devuelven **datos de mentira** (`GestorDatosDeMentira`), así la pantalla avanza sin esperar. Se borra en la T9.
-
-## Patrón State en una línea
-
-`Documentacion` (contexto) no pregunta en qué estado está: le delega cada operación a su `EstadoDocumentacion` actual. Lo que un estado no redefine queda prohibido (`TransicionInvalidaException`). El estado se guarda en la base por su nombre (`EstadoDocumentacionConverter`).
-
-Nombres: se usa **`Registrada`** (como en la máquina de estados). En el diagrama de clases figura como "Registrado": hay que corregir el diagrama.
-
-## Ramas
-
-Una rama por tarjeta, desde `main`:
-
-```
-feature/t1-persistencia    feature/t2-sesion-notificacion
-feature/t3-state           feature/t4-documentacion
-feature/t5-gestor          feature/t6-alternativos
-feature/t7-pantalla-bandeja feature/t8-pantalla-control
-```
-
-Commits con el prefijo de la tarjeta: `PB-5 feat(state): transiciones de EnBolsinEnviado`.
+<div align="center">
+<sub>Hecho para la mesa de entradas: el precinto en la mano, la lista en la pantalla.</sub>
+</div>

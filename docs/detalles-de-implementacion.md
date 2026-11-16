@@ -10,8 +10,8 @@ Sección para el informe de la Entrega 2. Responde a los puntos que pide la cons
 
 **Spring Boot 3.5**, con estos módulos:
 
-- **Spring Web (MVC):** recibe los pedidos del navegador. La pantalla del caso de uso (`PantallaRecepcionDeBolsines`) es un controlador web.
-- **Thymeleaf:** arma las páginas HTML en el servidor a partir de lo que devuelve el gestor.
+- **Spring Web (MVC):** recibe los pedidos del navegador. La pantalla del caso de uso (`PantallaRecepcionDeBolsines`) es un controlador REST: recibe cada acción, se la pasa al gestor y devuelve el resultado en JSON.
+- **React + Vite + TypeScript:** las pantallas que ve el usuario. Muestran lo que devuelve el gestor y no deciden nada. Maven las compila con `frontend-maven-plugin` y quedan dentro del mismo jar, así que se sigue corriendo con `mvn spring-boot:run`.
 - **Spring Data JPA:** acceso a la base de datos (ver persistencia).
 
 El proyecto se construye con **Maven** y las pruebas automáticas usan **JUnit 5**.
@@ -22,7 +22,7 @@ El proyecto se construye con **Maven** y las pruebas automáticas usan **JUnit 5
 
 | Paquete | Estereotipo | Clases |
 |---|---|---|
-| `boundary` | `<<boundary>>` | `PantallaRecepcionDeBolsines` |
+| `boundary` | `<<boundary>>` | `PantallaRecepcionDeBolsines`, `PantallaIngreso` (y las pantallas de React en `frontend/`) |
 | `control` | `<<control>>` | `GestorRecepcionDeBolsines` |
 | `entity` | `<<entity>>` | `Bolsin`, `Remito`, `DetalleRemito`, `Documentacion`, `Estado`, etc. |
 | `entity.estado` | Patrón State | `EstadoDocumentacion` y sus 9 estados concretos |
