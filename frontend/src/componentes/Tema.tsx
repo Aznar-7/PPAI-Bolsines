@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 type Preferencia = 'claro' | 'oscuro' | 'sistema'
 
 const CLAVE = 'bolsines-tema'
+const EVENTO = 'bolsines-tema'
 const oscuroDelSistema = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
 
 function leer(): Preferencia {
@@ -25,6 +26,13 @@ function aplicar(preferencia: Preferencia) {
 function useTema() {
   const [preferencia, setPreferencia] = useState<Preferencia>(leer)
 
+  // Hay mas de un selector en pantalla (barra lateral y barra de celular): se mantienen de acuerdo.
+  useEffect(() => {
+    const alCambiar = (e: Event) => setPreferencia((e as CustomEvent<Preferencia>).detail)
+    window.addEventListener(EVENTO, alCambiar)
+    return () => window.removeEventListener(EVENTO, alCambiar)
+  }, [])
+
   useEffect(() => {
     aplicar(preferencia)
     try {
@@ -40,7 +48,8 @@ function useTema() {
     return () => consulta.removeEventListener('change', alCambiar)
   }, [preferencia])
 
-  return [preferencia, setPreferencia] as const
+  const elegir = (p: Preferencia) => window.dispatchEvent(new CustomEvent(EVENTO, { detail: p }))
+  return [preferencia, elegir] as const
 }
 
 const OPCIONES: { valor: Preferencia; texto: string; icono: LucideIcon }[] = [
